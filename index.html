@@ -1801,13 +1801,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <select class="recur-select" id="m-recur-freq" style="margin-top:8px;width:100%;">
         <option value="daily">Every day</option>
         <option value="weekly">Every week (same day)</option>
-        <option value="monday">Every Monday</option>
-        <option value="tuesday">Every Tuesday</option>
-        <option value="wednesday">Every Wednesday</option>
-        <option value="thursday">Every Thursday</option>
-        <option value="friday">Every Friday</option>
-        <option value="saturday">Every Saturday</option>
-        <option value="sunday">Every Sunday</option>
+        <option value="monday" data-dayidx="0">Every Monday</option>
+        <option value="tuesday" data-dayidx="1">Every Tuesday</option>
+        <option value="wednesday" data-dayidx="2">Every Wednesday</option>
+        <option value="thursday" data-dayidx="3">Every Thursday</option>
+        <option value="friday" data-dayidx="4">Every Friday</option>
+        <option value="saturday" data-dayidx="5">Every Saturday</option>
+        <option value="sunday" data-dayidx="6">Every Sunday</option>
       </select>
       <div class="recur-select show" id="m-recur-duration-row" style="margin-top:8px;display:none;">
         <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Duration</label>
@@ -1841,13 +1841,13 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <select class="recur-select" id="task-modal-recur-freq" style="margin-top:8px;width:100%;">
       <option value="daily">Every day</option>
       <option value="weekly">Every week (same day)</option>
-      <option value="monday">Every Monday</option>
-      <option value="tuesday">Every Tuesday</option>
-      <option value="wednesday">Every Wednesday</option>
-      <option value="thursday">Every Thursday</option>
-      <option value="friday">Every Friday</option>
-      <option value="saturday">Every Saturday</option>
-      <option value="sunday">Every Sunday</option>
+      <option value="monday" data-dayidx="0">Every Monday</option>
+      <option value="tuesday" data-dayidx="1">Every Tuesday</option>
+      <option value="wednesday" data-dayidx="2">Every Wednesday</option>
+      <option value="thursday" data-dayidx="3">Every Thursday</option>
+      <option value="friday" data-dayidx="4">Every Friday</option>
+      <option value="saturday" data-dayidx="5">Every Saturday</option>
+      <option value="sunday" data-dayidx="6">Every Sunday</option>
     </select>
     <div id="task-modal-duration-row" style="margin-top:8px;display:none;">
       <label style="font-size:11px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px;">Duration</label>
@@ -1905,8 +1905,9 @@ const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
 
 // ── Constants ─────────────────────────────
-const DAYS      = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-const DAYS_FULL = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+// Days now come from translations — use t('daysShort') and t('daysFull')
+const DAYS      = () => t('daysShort');
+const DAYS_FULL = () => t('daysFull');
 const DAY_COLORS= ['mon','tue','wed','thu','fri','sat','sun'];
 const DAY_COLOR_VALS=['#FF6B6B','#FF9F43','#f0c040','#26de81','#45aaf2','#a29bfe','#fd79a8'];
 const CAT_COLORS= {work:'#45aaf2',personal:'#26de81',shopping:'#f0c040',health:'#fd79a8',custom:'#a29bfe'};
@@ -2073,8 +2074,9 @@ window.showPage=function(page){
 function render(){
   const wk=weekKey(weekOffset),dates=getWeekDates(weekOffset);
   const mon=getMon(weekOffset),sun=dates[6];
-  const fmt=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  const wkLabelText=`${fmt(mon)} — ${fmt(sun)}, ${sun.getFullYear()}`;
+  const months = t('monthsShort');
+  const fmt = d => `${months[d.getMonth()]} ${d.getDate()}`;
+  const wkLabelText = `${fmt(mon)} — ${fmt(sun)}, ${sun.getFullYear()}`;
   document.getElementById('week-label').textContent=wkLabelText;
   const mobLbl=document.getElementById('mob-week-label');
   if(mobLbl)mobLbl.textContent=wkLabelText;
@@ -2087,7 +2089,7 @@ function render(){
   const pct=total?Math.round(done/total*100):0;
   document.getElementById('s-pct').textContent=pct+'%';
   document.getElementById('s-bar').style.width=pct+'%';
-  document.getElementById('s-busiest').textContent=busyIdx>=0&&busy>0?DAYS[busyIdx]:'—';
+  document.getElementById('s-busiest').textContent=busyIdx>=0&&busy>0?DAYS_FULL()[busyIdx]:'—';
   document.getElementById('s-busiest-sub').textContent=busyIdx>=0&&busy>0?busy+' tasks':'';
 
   // Header
@@ -2096,7 +2098,9 @@ function render(){
     const tasks=weekData[i]||[],dc=tasks.filter(t=>t.done).length;
     const th=document.createElement('th');
     th.className=`col-${DAY_COLORS[i]} ${isToday(date)?'today-col':''}`;
-    th.innerHTML=`<div class="day-header"><div class="day-name">${DAYS[i]}</div><div class="day-date">${date.getDate()}</div><div class="day-month">${date.toLocaleDateString('en-US',{month:'short'})}</div><div class="day-count">${tasks.length} task${tasks.length!==1?'s':''} · ${dc} done</div></div>`;
+    const dayMonths = t('monthsShort');
+    const taskWord = tasks.length===1 ? t('task') : t('tasks');
+    th.innerHTML=`<div class="day-header"><div class="day-name">${DAYS()[i]}</div><div class="day-date">${date.getDate()}</div><div class="day-month">${dayMonths[date.getMonth()]}</div><div class="day-count">${tasks.length} ${taskWord} · ${dc} ${t('done')}</div></div>`;
     hRow.appendChild(th);
   });
 
@@ -2121,8 +2125,8 @@ function render(){
       <div class="mdl-left">
         <div class="mdl-num" style="${!isToday(date)?'color:'+dayColor:''}">${date.getDate()}</div>
         <div>
-          <div class="mdl-day" style="${!isToday(date)?'color:'+dayColor:''}">${DAYS_FULL[i]}</div>
-          <div class="mdl-date">${date.toLocaleDateString('en-US',{month:'long',year:'numeric'})} · ${tasks_count} task${tasks_count!==1?'s':''} · ${done_count} done</div>
+          <div class="mdl-day" style="${!isToday(date)?'color:'+dayColor:''}">${DAYS_FULL()[i]}</div>
+          <div class="mdl-date">${t('monthsFull')[date.getMonth()]} ${date.getFullYear()} · ${tasks_count} ${tasks_count===1?t('task'):t('tasks')} · ${done_count} ${t('done')}</div>
         </div>
       </div>
       <button class="mdl-add" data-day="${i}" title="Add task">+</button>
@@ -2145,7 +2149,7 @@ function render(){
       tgtTasks.push(moved);
       weekData[srcDay]=srcTasks;weekData[i]=tgtTasks;
       saveDay(srcDay,srcTasks);saveDay(i,tgtTasks);
-      render();showToast(`✅ Moved to ${DAYS_FULL[i]}`);
+      render();showToast(`✅ ${DAYS_FULL()[i]}`);
     });
 
     tasks.forEach(task=>{
@@ -2266,7 +2270,7 @@ function render(){
       saveDay(dayI,tasks);render();
       // Check if all done for the day
       if(t.done&&tasks.every(x=>x.done)&&tasks.length>0){
-        if(notifSettings.complete)sendNotif('🎉 All done!',`You completed all ${tasks.length} tasks for ${DAYS_FULL[dayI]}!`);
+        if(notifSettings.complete)sendNotif('🎉 All done!',`You completed all ${tasks.length} tasks for ${DAYS_FULL()[dayI]}!`);
         spawnConfetti();
       }
       allWeekData[weekKey(weekOffset)]=weekData;
@@ -2339,7 +2343,7 @@ function spawnConfetti(){
 function openModal(dayIdx){
   const dates=getWeekDates(weekOffset),badge=document.getElementById('modal-badge'),color=DAY_COLOR_VALS[dayIdx];
   badge.style.background=color+'18';badge.style.color=color;badge.style.border=`1.5px solid ${color}40`;
-  badge.textContent=`${DAYS_FULL[dayIdx]} · ${dates[dayIdx].toLocaleDateString('en-US',{month:'long',day:'numeric'})}`;
+  badge.textContent=`${DAYS_FULL()[dayIdx]} · ${dates[dayIdx].toLocaleDateString('en-US',{month:'long',day:'numeric'})}`;
   document.getElementById('m-text').value='';
   document.getElementById('m-notes').value='';
   document.getElementById('m-recur-toggle').checked=false;
@@ -2434,7 +2438,7 @@ function openTaskModal(task, dayI){
   const color=DAY_COLOR_VALS[dayI];
   const badge=document.getElementById('task-modal-badge');
   badge.style.background=color+'18';badge.style.color=color;badge.style.border=`1.5px solid ${color}40`;
-  badge.textContent=DAYS_FULL[dayI];
+  badge.textContent=DAYS_FULL()[dayI];
   document.getElementById('task-modal-title').textContent=task.text;
   const catColors={work:'#45aaf2',personal:'#26de81',shopping:'#f0c040',health:'#fd79a8',custom:'#a29bfe'};
   const priColors={high:'#FF6B6B',medium:'#FF9F43',low:'#26de81'};
@@ -2844,7 +2848,7 @@ function updateTemplatePreview(){
   let html='';let hasAny=false;
   for(let i=0;i<7;i++){
     const tasks=weekData[i]||[];
-    if(tasks.length){hasAny=true;html+=`<div class="tmpl-preview-day">${DAYS_FULL[i]}</div>`;
+    if(tasks.length){hasAny=true;html+=`<div class="tmpl-preview-day">${DAYS_FULL()[i]}</div>`;
     tasks.forEach(t=>{html+=`<div class="tmpl-preview-task">${t.text}</div>`;});}
   }
   prev.innerHTML=hasAny?html:'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No tasks this week yet. Add some tasks first!</div>';
@@ -3023,7 +3027,7 @@ function renderDashboard(){
   // Best day
   let bestDayIdx=0,bestDayRate=0;
   dayTotals.forEach((t,i)=>{const r=t?Math.round(dayDones[i]/t*100):0;if(r>bestDayRate){bestDayRate=r;bestDayIdx=i;}});
-  document.getElementById('best-day-name').textContent=dayTotals[bestDayIdx]>0?DAYS_FULL[bestDayIdx]:'—';
+  document.getElementById('best-day-name').textContent=dayTotals[bestDayIdx]>0?DAYS_FULL()[bestDayIdx]:'—';
   document.getElementById('best-day-stat').textContent=dayTotals[bestDayIdx]>0?`${bestDayRate}% avg completion · ${dayDones[bestDayIdx]} tasks done`:'No data yet';
 
   // ── Bar chart (staircase with pixel heights) ──
@@ -3049,7 +3053,7 @@ function renderDashboard(){
     // Total tasks shown as a faint ghost bar behind
     const totalH=Math.round((total/Math.max(...dayTotals,1))*BAR_AREA_H);
     const col=document.createElement('div');col.className='bar-col';
-    col.title=`${DAYS_FULL[i]}: ${done} done / ${total} total`;
+    col.title=`${DAYS_FULL()[i]}: ${done} done / ${total} total`;
     col.innerHTML=`
       <div class="bar-val">${done}/${total}</div>
       <div class="bar-outer" style="position:relative;">
@@ -3057,7 +3061,7 @@ function renderDashboard(){
         <div class="bar-inner" style="height:4px;background:${DAY_COLOR_VALS[i]};position:relative;z-index:1;">
         </div>
       </div>
-      <div class="bar-label">${DAYS[i]}</div>`;
+      <div class="bar-label">${DAYS()[i]}</div>`;
     chart.appendChild(col);
     // Animate with rAF + stagger
     const barEl=col.querySelector('.bar-inner');
@@ -3211,7 +3215,7 @@ function runSearch(q){
 
   searchResults.innerHTML = results.slice(0,12).map(({task, dayIdx, wk, weekDate})=>{
     const color = DAY_COLOR_VALS[dayIdx];
-    const dayName = DAYS_FULL[dayIdx];
+    const dayName = DAYS_FULL()[dayIdx];
     const dateStr = weekDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     const doneStyle = task.done ? 'text-decoration:line-through;opacity:.5;' : '';
     return `<div class="search-result-item" data-wk="${wk}" data-day="${dayIdx}">
@@ -3820,7 +3824,7 @@ function renderHabitsGrid(){
     }
   }
 
-  const dayLabels = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const dayLabels = [t('daysShort')[6], ...t('daysShort').slice(0,6)]; // Sun first for getDay()
 
   // Grid template columns: label col + one col per day
   const isMobile = window.innerWidth < 769;
@@ -3831,7 +3835,7 @@ function renderHabitsGrid(){
   // Week range label
   const weekStart = days[0];
   const weekEnd = days[days.length-1];
-  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthNames = t('monthsShort');
   const rangeLabel = `${monthNames[weekStart.getMonth()]} ${weekStart.getDate()} – ${monthNames[weekEnd.getMonth()]} ${weekEnd.getDate()}, ${weekEnd.getFullYear()}`;
 
   let html = `<div class="habits-week-bar"><span class="habits-week-label">Week</span><span class="habits-week-range">${rangeLabel}</span></div>`;
@@ -4184,6 +4188,12 @@ const TRANSLATIONS = {
     dayStreak: 'day streak', removeHabit: 'Remove this habit? All your check-ins will be lost.',
     habitAdded: '🎯 Habit added!', habitRemoved: '🗑️ Habit removed', enterHabitName: '⚠️ Enter a habit name',
     week: 'Week',
+    daysShort: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    daysFull: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+    monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+    monthsFull: ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    everyDay: ['Every Monday','Every Tuesday','Every Wednesday','Every Thursday','Every Friday','Every Saturday','Every Sunday'],
+    task: 'task', tasks: 'tasks', done: 'done',
     // Boards
     newBoard: '+ New Board', boardName: 'Board Name', boardColor: 'Board Color',
     createBoard: 'Create Board ✦', invite: '👥 Invite', deleteBoard: '🗑 Delete Board',
@@ -4240,6 +4250,12 @@ const TRANSLATIONS = {
     dayStreak: 'jours de suite', removeHabit: 'Supprimer cette habitude ? Toutes vos données seront perdues.',
     habitAdded: '🎯 Habitude ajoutée !', habitRemoved: '🗑️ Habitude supprimée', enterHabitName: '⚠️ Entrez un nom',
     week: 'Semaine',
+    daysShort: ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],
+    daysFull: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
+    monthsShort: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
+    monthsFull: ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
+    everyDay: ['Chaque Lundi','Chaque Mardi','Chaque Mercredi','Chaque Jeudi','Chaque Vendredi','Chaque Samedi','Chaque Dimanche'],
+    task: 'tâche', tasks: 'tâches', done: 'faite',
     newBoard: '+ Nouveau Tableau', boardName: 'Nom du tableau', boardColor: 'Couleur',
     createBoard: 'Créer ✦', invite: '👥 Inviter', deleteBoard: '🗑 Supprimer',
     inviteByEmail: 'Inviter par email', inviteBtn: 'Envoyer',
@@ -4291,6 +4307,12 @@ const TRANSLATIONS = {
     dayStreak: 'أيام متتالية', removeHabit: 'حذف هذه العادة؟ ستُفقد جميع بياناتك.',
     habitAdded: '🎯 تمت إضافة العادة!', habitRemoved: '🗑️ تم حذف العادة', enterHabitName: '⚠️ أدخل اسم العادة',
     week: 'الأسبوع',
+    daysShort: ['اثن','ثلا','أرب','خمي','جمع','سبت','أحد'],
+    daysFull: ['الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'],
+    monthsShort: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    monthsFull: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
+    everyDay: ['كل اثنين','كل ثلاثاء','كل أربعاء','كل خميس','كل جمعة','كل سبت','كل أحد'],
+    task: 'مهمة', tasks: 'مهام', done: 'منجزة',
     newBoard: '+ لوحة جديدة', boardName: 'اسم اللوحة', boardColor: 'اللون',
     createBoard: 'إنشاء ✦', invite: '👥 دعوة', deleteBoard: '🗑 حذف',
     inviteByEmail: 'دعوة بالبريد الإلكتروني', inviteBtn: 'إرسال',
@@ -4414,6 +4436,16 @@ function applyTranslations(){
   fbtns.forEach((b,i) => { if(freqLabels[i]) b.textContent = freqLabels[i]; });
   // Onboarding skip btn
   const skipBtn = document.querySelector('.onb-skip'); if(skipBtn) skipBtn.textContent = t('skipTour');
+
+  // Update recurring day dropdowns with translated day names
+  document.querySelectorAll('[data-dayidx]').forEach(opt => {
+    const idx = parseInt(opt.dataset.dayidx);
+    opt.textContent = t('everyDay')[idx];
+  });
+
+  // Re-render planner so day names + month update immediately
+  if(typeof render === 'function') render();
+
   // Re-render dynamic pages if active
   if(document.getElementById('page-habits')?.classList.contains('active')) renderHabitsGrid();
 }
