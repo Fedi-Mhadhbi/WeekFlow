@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -819,6 +819,38 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .hsc-icon{font-size:22px;margin-bottom:6px;}
 @media(max-width:600px){.habit-stats-row{grid-template-columns:repeat(3,1fr);gap:8px;}.hsc-value{font-size:22px;}.hsc-label{font-size:9px;}.habit-stat-card{padding:12px 10px;}}
 
+
+/* ══ LANGUAGE SWITCHER ══════════════════════════════ */
+.lang-btn{background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:5px 10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:5px;}
+.lang-btn:hover{border-color:var(--ink);color:var(--ink);}
+.lang-dropdown{position:relative;}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12);overflow:hidden;display:none;z-index:200;min-width:130px;}
+.lang-menu.open{display:block;}
+.lang-option{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;transition:background .15s;}
+.lang-option:hover{background:var(--bg);}
+.lang-option.active{background:var(--bg);color:var(--ink);}
+.lang-option .lang-flag{font-size:16px;}
+
+/* RTL support */
+[dir="rtl"] .topbar{flex-direction:row-reverse;}
+[dir="rtl"] .tb-tabs{margin-right:0;margin-left:auto;}
+[dir="rtl"] .tb-right{flex-direction:row-reverse;}
+[dir="rtl"] .task-row{flex-direction:row-reverse;}
+[dir="rtl"] .day-col{text-align:right;}
+[dir="rtl"] .add-task-input{text-align:right;}
+[dir="rtl"] .modal{text-align:right;}
+[dir="rtl"] .modal-btns{flex-direction:row-reverse;}
+[dir="rtl"] .habits-header{flex-direction:row-reverse;}
+[dir="rtl"] .habit-row-label{flex-direction:row-reverse;}
+[dir="rtl"] .land-nav{flex-direction:row-reverse;}
+[dir="rtl"] .land-hero{direction:rtl;}
+[dir="rtl"] .board-topbar{flex-direction:row-reverse;}
+[dir="rtl"] .hg-corner{flex-direction:row-reverse;}
+[dir="rtl"] .search-wrap{flex-direction:row-reverse;}
+[dir="rtl"] .onb-btns{flex-direction:row-reverse;}
+[dir="rtl"] * {font-family:'Plus Jakarta Sans','Segoe UI',Tahoma,sans-serif;}
+[dir="rtl"] .tb-logo,[dir="rtl"] .habits-title,[dir="rtl"] .dash-title,[dir="rtl"] .land-h1,[dir="rtl"] .lfc-title,[dir="rtl"] .onb-title{font-family:'Fraunces',serif;}
+
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 
 /* ══ POMODORO PAGE ══════════════════════════ */
@@ -1300,6 +1332,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <button class="search-btn" id="search-btn" title="Search">🔍</button>
         <div class="search-results" id="search-results"></div>
       </div>
+      <!-- Language switcher -->
+      <div class="lang-dropdown" id="lang-dropdown">
+        <button class="lang-btn" onclick="toggleLangMenu()"><span id="lang-flag">🇬🇧</span><span id="lang-code">EN</span></button>
+        <div class="lang-menu" id="lang-menu">
+          <div class="lang-option active" data-lang="en" onclick="setLanguage('en')"><span class="lang-flag">🇬🇧</span> English</div>
+          <div class="lang-option" data-lang="fr" onclick="setLanguage('fr')"><span class="lang-flag">🇫🇷</span> Français</div>
+          <div class="lang-option" data-lang="ar" onclick="setLanguage('ar')"><span class="lang-flag">🇸🇦</span> العربية</div>
+        </div>
+      </div>
       <!-- Dark mode toggle -->
       <button class="dark-toggle" id="dark-toggle" title="Toggle dark mode" onclick="toggleDarkMode()">🌙</button>
       <button class="tb-install-btn" id="tb-install-btn" title="Install App">📲 Install App</button>
@@ -1651,7 +1692,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <div class="modal-overlay" id="add-habit-modal">
     <div class="modal">
       <h3>Add New Habit</h3>
-      <div class="field"><label>Habit Name</label><input id="habit-name-input" placeholder="e.g. Morning Run, Read 20 min..."></div>
+      <div class="field"><label id="lbl-habit-name">Habit Name</label><input id="habit-name-input" placeholder="e.g. Morning Run, Read 20 min..."></div>
       <div class="field">
         <label>Pick a Color</label>
         <div class="habit-color-picker" id="habit-color-picker">
@@ -3751,8 +3792,8 @@ function renderHabitsGrid(){
   if(!habits.length){
     container.innerHTML = `<div class="habits-empty">
       <div class="habits-empty-icon">🎯</div>
-      <div class="habits-empty-title">No habits yet</div>
-      <div style="color:var(--muted);font-size:13px;">Click "+ Add Habit" to start tracking</div>
+      <div class="habits-empty-title">${t('noHabits')}</div>
+      <div style="color:var(--muted);font-size:13px;">${t('noHabitsSub')}</div>
     </div>`;
     return;
   }
@@ -3797,7 +3838,7 @@ function renderHabitsGrid(){
   html += `<div class="habits-grid-wrap"><div class="habits-grid" style="grid-template-columns:${gridCols};">`;
 
   // Header row
-  html += `<div class="hg-corner"><span class="hg-corner-label">Habit</span></div>`;
+  html += `<div class="hg-corner"><span class="hg-corner-label">${t('habit')}</span></div>`;
   days.forEach(d => {
     const ds = fmtDate(d);
     const isToday = ds === todayStr;
@@ -3852,7 +3893,7 @@ function renderHabitsGrid(){
   });
 
   // Summary row — how many habits done per day
-  html += `<div class="hg-summary-label">Daily Score</div>`;
+  html += `<div class="hg-summary-label">${t('dailyScore')}</div>`;
   days.forEach(d => {
     const ds = fmtDate(d);
     const doneCount = visibleHabits.filter(h => habitLogs[`${h.id}_${ds}`]).length;
@@ -3882,13 +3923,13 @@ window.toggleHabit = async function(habitId, dateStr){
 };
 
 window.deleteHabit = async function(habitId){
-  if(!confirm('Remove this habit? All your check-ins will be lost.')) return;
+  if(!confirm(t('removeHabit'))) return;
   habits = habits.filter(h => h.id !== habitId);
   // Clean up logs
   Object.keys(habitLogs).forEach(k => { if(k.startsWith(habitId+'_')) delete habitLogs[k]; });
   renderHabitsGrid();
   await saveHabits();
-  showToast('🗑️ Habit removed');
+  showToast(t('habitRemoved'));
 };
 
 // ── Add habit modal ──
@@ -3946,14 +3987,14 @@ document.getElementById('habit-emoji-picker')?.addEventListener('click', e => {
 
 window.saveNewHabit = async function(){
   const name = document.getElementById('habit-name-input').value.trim();
-  if(!name){ showToast('⚠️ Enter a habit name'); return; }
+  if(!name){ showToast(t('enterHabitName')); return; }
   const newFreq = selectedHabitFreq;
   habits.push({ id: uid(), name, emoji: selectedHabitEmoji, color: selectedHabitColor, freq: newFreq, createdAt: new Date().toISOString() });
   await saveHabits();
   document.getElementById('add-habit-modal').classList.remove('show');
   // Auto-switch to the right view so user sees the new habit immediately
   renderHabitsGrid();
-  showToast('🎯 Habit added!');
+  showToast(t('habitAdded'));
 };
 
 document.getElementById('habit-name-input')?.addEventListener('keydown', e => {
@@ -3997,20 +4038,21 @@ function startOnboarding(){
 }
 
 function showOnbStep(){
-  const step = ONBOARDING_STEPS[onbStep];
+  const steps = getOnboardingSteps();
+  const step = steps[onbStep];
   const card = document.getElementById('onb-card');
-  const total = ONBOARDING_STEPS.length;
+  const total = steps.length;
   card.style.display = 'block';
 
-  document.getElementById('onb-step-badge').textContent = `Step ${onbStep+1} of ${total}`;
+  document.getElementById('onb-step-badge').textContent = `${t('stepOf')} ${onbStep+1} ${t('of')} ${total}`;
   document.getElementById('onb-icon').textContent = step.icon;
   document.getElementById('onb-title').textContent = step.title;
   document.getElementById('onb-desc').textContent = step.desc;
-  document.getElementById('onb-next-btn').textContent = onbStep === total-1 ? 'Done ✓' : 'Next →';
+  document.getElementById('onb-next-btn').textContent = onbStep === total-1 ? t('done') : t('next');
 
   // Progress dots
   const prog = document.getElementById('onb-progress');
-  prog.innerHTML = ONBOARDING_STEPS.map((_,i)=>`<div class="onb-dot${i===onbStep?' active':''}"></div>`).join('');
+  prog.innerHTML = steps.map((_,i)=>`<div class="onb-dot${i===onbStep?' active':''}"></div>`).join('');
 
   // Highlight target element
   const highlight = document.getElementById('onb-highlight');
@@ -4041,7 +4083,7 @@ function showOnbStep(){
 }
 
 window.nextOnboardingStep = function(){
-  if(onbStep >= ONBOARDING_STEPS.length - 1){
+  if(onbStep >= getOnboardingSteps().length - 1){
     skipOnboarding();
     return;
   }
@@ -4107,6 +4149,287 @@ function updateHabitStats(){
   document.getElementById('hsc-streak').textContent = bestStreak;
   document.getElementById('hsc-rate').textContent = rate + '%';
 }
+
+
+// ══ LANGUAGE / TRANSLATIONS ════════════════════════
+
+const TRANSLATIONS = {
+  en: {
+    dir: 'ltr', flag: '🇬🇧', code: 'EN',
+    // Nav tabs
+    planner: '📅 Planner', dashboard: '📊 Dashboard',
+    focus: '🍅 Focus', boards: '🗂️ Boards', habits: '🎯 Habits',
+    // Topbar
+    today: 'Today', signOut: 'Sign Out', searchPlaceholder: 'Search tasks...',
+    // Planner
+    addTask: 'Add a task...', noTasks: 'No tasks yet',
+    mon:'Mon',tue:'Tue',wed:'Wed',thu:'Thu',fri:'Fri',sat:'Sat',sun:'Sun',
+    // Dashboard
+    dashTitle: 'Dashboard', weeklyOverview: 'Weekly Overview',
+    tasksCompleted: 'Tasks Completed', totalTasks: 'Total Tasks',
+    // Habits
+    habitsTitle: '🎯 Habit Tracker', habitsSub: 'Build consistency one day at a time',
+    addHabit: '+ New Habit', habitName: 'Habit Name', habitNamePh: 'e.g. Morning Run, Read 20 min...',
+    pickColor: 'Pick a Color', pickEmoji: 'Pick an Emoji', frequency: 'Frequency',
+    freqDaily: '📅 Daily', freqWeekly: '📆 Weekly',
+    freqHintDaily: 'Tracked every day of the week', freqHintWeekly: 'Tracked every week',
+    cancel: 'Cancel', addHabitBtn: 'Add Habit ✦', saveBtn: 'Save',
+    dailyScore: 'Daily Score', habit: 'Habit',
+    thisWeek: 'This Week', completions: 'completions',
+    bestStreak: 'Best Streak', daysRow: 'days in a row',
+    completion: 'Completion', thisWeekPct: 'this week',
+    perfectWeekTitle: 'Perfect Week!', perfectWeekSub: 'You completed all habits every day this week. Incredible! 🔥',
+    perfectWeekBadge: '⭐ PERFECT WEEK',
+    noHabits: 'No habits yet', noHabitsSub: 'Click "+ New Habit" to start tracking',
+    dayStreak: 'day streak', removeHabit: 'Remove this habit? All your check-ins will be lost.',
+    habitAdded: '🎯 Habit added!', habitRemoved: '🗑️ Habit removed', enterHabitName: '⚠️ Enter a habit name',
+    week: 'Week',
+    // Boards
+    newBoard: '+ New Board', boardName: 'Board Name', boardColor: 'Board Color',
+    createBoard: 'Create Board ✦', invite: '👥 Invite', deleteBoard: '🗑 Delete Board',
+    inviteByEmail: 'Invite by Email', inviteBtn: 'Send Invite',
+    addCard: '+ Add Card', addColumn: '+ Add Column',
+    cardTitle: 'Card Title', cardNotes: 'Notes', priority: 'Priority', assignee: 'Assignee',
+    low: 'Low', medium: 'Medium', high: 'High', urgent: 'Urgent',
+    deleteCard: '🗑 Delete', noBoardsTitle: 'No boards yet',
+    // Focus
+    focusTitle: 'Focus Timer', startFocus: 'Start', pause: 'Pause', reset: 'Reset',
+    // Auth
+    welcome: 'Welcome back', createAccount: 'Create account',
+    email: 'Email', password: 'Password', name: 'Your Name',
+    signIn: 'Sign In', signUp: 'Create Account', orGoogle: 'or continue with Google',
+    // Onboarding
+    onbWelcomeTitle: 'Welcome to WeekFlow!', onbWelcomeDesc: "Let's take a quick tour so you can get the most out of the app.",
+    onbPlannerTitle: 'Your Weekly Planner', onbPlannerDesc: 'Add tasks to any day, set priorities, and check them off as you go.',
+    onbHabitsTitle: 'Habit Tracker', onbHabitsDesc: 'Track daily habits with a beautiful grid. Build streaks and earn a Perfect Week badge!',
+    onbBoardsTitle: 'Team Boards', onbBoardsDesc: 'Collaborate with others in real-time using Trello-style boards.',
+    onbFocusTitle: 'Focus Timer', onbFocusDesc: 'Use the Pomodoro timer to stay focused. 25 minutes on, 5 minutes break!',
+    next: 'Next →', done: 'Done ✓', skipTour: 'Skip tour', stepOf: 'Step',of:'of',
+    // Landing
+    landBadge: '✦ Your personal productivity OS',
+    landH1a: 'Plan your week.', landH1b: 'Build your habits.', landH1c: 'Ship your projects.',
+    landSub: 'WeekFlow combines your weekly planner, habit tracker, focus timer, and team boards — all in one beautiful app.',
+    landCTAPrimary: 'Start for Free ✦', landCTASecondary: 'I have an account',
+    landSignIn: 'Sign In', landGetStarted: 'Get Started Free →',
+    landFreeForever: 'Free forever', landTools: 'Built-in tools', landTasks: 'Tasks & habits', landAds: 'Ads ever',
+    landFooter: 'Made with ❤️ · WeekFlow · Free forever · No ads',
+  },
+
+  fr: {
+    dir: 'ltr', flag: '🇫🇷', code: 'FR',
+    planner: '📅 Agenda', dashboard: '📊 Tableau', focus: '🍅 Focus',
+    boards: '🗂️ Tableaux', habits: '🎯 Habitudes',
+    today: "Aujourd'hui", signOut: 'Déconnexion', searchPlaceholder: 'Rechercher...',
+    addTask: 'Ajouter une tâche...', noTasks: 'Aucune tâche',
+    mon:'Lun',tue:'Mar',wed:'Mer',thu:'Jeu',fri:'Ven',sat:'Sam',sun:'Dim',
+    dashTitle: 'Tableau de bord', weeklyOverview: 'Aperçu hebdomadaire',
+    tasksCompleted: 'Tâches terminées', totalTasks: 'Total des tâches',
+    habitsTitle: '🎯 Suivi des Habitudes', habitsSub: 'Construisez la constance jour après jour',
+    addHabit: '+ Nouvelle Habitude', habitName: "Nom de l'habitude", habitNamePh: 'ex. Course matinale, Lire 20 min...',
+    pickColor: 'Choisir une couleur', pickEmoji: 'Choisir un emoji', frequency: 'Fréquence',
+    freqDaily: '📅 Quotidien', freqWeekly: '📆 Hebdomadaire',
+    freqHintDaily: 'Suivi chaque jour de la semaine', freqHintWeekly: 'Suivi chaque semaine',
+    cancel: 'Annuler', addHabitBtn: 'Ajouter ✦', saveBtn: 'Enregistrer',
+    dailyScore: 'Score Quotidien', habit: 'Habitude',
+    thisWeek: 'Cette Semaine', completions: 'complétions',
+    bestStreak: 'Meilleure Série', daysRow: 'jours consécutifs',
+    completion: 'Complétion', thisWeekPct: 'cette semaine',
+    perfectWeekTitle: 'Semaine Parfaite !', perfectWeekSub: 'Toutes les habitudes complétées chaque jour cette semaine. Incroyable ! 🔥',
+    perfectWeekBadge: '⭐ SEMAINE PARFAITE',
+    noHabits: 'Aucune habitude', noHabitsSub: 'Cliquez sur "+ Nouvelle Habitude" pour commencer',
+    dayStreak: 'jours de suite', removeHabit: 'Supprimer cette habitude ? Toutes vos données seront perdues.',
+    habitAdded: '🎯 Habitude ajoutée !', habitRemoved: '🗑️ Habitude supprimée', enterHabitName: '⚠️ Entrez un nom',
+    week: 'Semaine',
+    newBoard: '+ Nouveau Tableau', boardName: 'Nom du tableau', boardColor: 'Couleur',
+    createBoard: 'Créer ✦', invite: '👥 Inviter', deleteBoard: '🗑 Supprimer',
+    inviteByEmail: 'Inviter par email', inviteBtn: 'Envoyer',
+    addCard: '+ Ajouter', addColumn: '+ Colonne',
+    cardTitle: 'Titre', cardNotes: 'Notes', priority: 'Priorité', assignee: 'Assigné',
+    low: 'Faible', medium: 'Moyen', high: 'Élevé', urgent: 'Urgent',
+    deleteCard: '🗑 Supprimer', noBoardsTitle: 'Aucun tableau',
+    focusTitle: 'Minuteur Focus', startFocus: 'Démarrer', pause: 'Pause', reset: 'Réinitialiser',
+    welcome: 'Bon retour', createAccount: 'Créer un compte',
+    email: 'Email', password: 'Mot de passe', name: 'Votre nom',
+    signIn: 'Se connecter', signUp: 'Créer un compte', orGoogle: 'ou continuer avec Google',
+    onbWelcomeTitle: 'Bienvenue sur WeekFlow !', onbWelcomeDesc: 'Faisons un tour rapide pour tirer le meilleur parti de l'application.',
+    onbPlannerTitle: 'Votre Agenda Hebdomadaire', onbPlannerDesc: 'Ajoutez des tâches, définissez des priorités et cochez-les au fur et à mesure.',
+    onbHabitsTitle: 'Suivi des Habitudes', onbHabitsDesc: 'Suivez vos habitudes quotidiennes avec une belle grille.',
+    onbBoardsTitle: 'Tableaux d'Équipe', onbBoardsDesc: 'Collaborez en temps réel avec des tableaux style Trello.',
+    onbFocusTitle: 'Minuteur Focus', onbFocusDesc: 'Utilisez le minuteur Pomodoro pour rester concentré.',
+    next: 'Suivant →', done: 'Terminé ✓', skipTour: 'Passer', stepOf: 'Étape', of: 'sur',
+    landBadge: '✦ Votre OS de productivité personnel',
+    landH1a: 'Planifiez votre semaine.', landH1b: 'Construisez vos habitudes.', landH1c: 'Réalisez vos projets.',
+    landSub: 'WeekFlow combine votre agenda, suivi des habitudes, minuteur focus et tableaux d'équipe en une belle application.',
+    landCTAPrimary: 'Commencer Gratuitement ✦', landCTASecondary: "J'ai déjà un compte",
+    landSignIn: 'Connexion', landGetStarted: 'Démarrer Gratuitement →',
+    landFreeForever: 'Gratuit à vie', landTools: 'Outils intégrés', landTasks: 'Tâches & habitudes', landAds: 'Publicités',
+    landFooter: 'Fait avec ❤️ · WeekFlow · Gratuit pour toujours · Sans publicité',
+  },
+
+  ar: {
+    dir: 'rtl', flag: '🇸🇦', code: 'AR',
+    planner: '📅 المخطط', dashboard: '📊 لوحة التحكم', focus: '🍅 التركيز',
+    boards: '🗂️ اللوحات', habits: '🎯 العادات',
+    today: 'اليوم', signOut: 'تسجيل الخروج', searchPlaceholder: 'بحث في المهام...',
+    addTask: 'إضافة مهمة...', noTasks: 'لا توجد مهام',
+    mon:'اثن',tue:'ثلا',wed:'أرب',thu:'خمي',fri:'جمع',sat:'سبت',sun:'أحد',
+    dashTitle: 'لوحة التحكم', weeklyOverview: 'نظرة عامة أسبوعية',
+    tasksCompleted: 'المهام المنجزة', totalTasks: 'إجمالي المهام',
+    habitsTitle: '🎯 متتبع العادات', habitsSub: 'ابنِ الاتساق يوماً بيوم',
+    addHabit: '+ عادة جديدة', habitName: 'اسم العادة', habitNamePh: 'مثال: ركض صباحي، قراءة 20 دقيقة...',
+    pickColor: 'اختر لوناً', pickEmoji: 'اختر رمزاً', frequency: 'التكرار',
+    freqDaily: '📅 يومي', freqWeekly: '📆 أسبوعي',
+    freqHintDaily: 'يُتتبع كل يوم في الأسبوع', freqHintWeekly: 'يُتتبع كل أسبوع',
+    cancel: 'إلغاء', addHabitBtn: 'إضافة عادة ✦', saveBtn: 'حفظ',
+    dailyScore: 'النتيجة اليومية', habit: 'العادة',
+    thisWeek: 'هذا الأسبوع', completions: 'إتمام',
+    bestStreak: 'أفضل سلسلة', daysRow: 'أيام متتالية',
+    completion: 'نسبة الإتمام', thisWeekPct: 'هذا الأسبوع',
+    perfectWeekTitle: 'أسبوع مثالي!', perfectWeekSub: 'أكملت جميع العادات كل يوم هذا الأسبوع. رائع! 🔥',
+    perfectWeekBadge: '⭐ أسبوع مثالي',
+    noHabits: 'لا توجد عادات بعد', noHabitsSub: 'انقر على "+ عادة جديدة" للبدء',
+    dayStreak: 'أيام متتالية', removeHabit: 'حذف هذه العادة؟ ستُفقد جميع بياناتك.',
+    habitAdded: '🎯 تمت إضافة العادة!', habitRemoved: '🗑️ تم حذف العادة', enterHabitName: '⚠️ أدخل اسم العادة',
+    week: 'الأسبوع',
+    newBoard: '+ لوحة جديدة', boardName: 'اسم اللوحة', boardColor: 'اللون',
+    createBoard: 'إنشاء ✦', invite: '👥 دعوة', deleteBoard: '🗑 حذف',
+    inviteByEmail: 'دعوة بالبريد الإلكتروني', inviteBtn: 'إرسال',
+    addCard: '+ إضافة', addColumn: '+ عمود',
+    cardTitle: 'العنوان', cardNotes: 'ملاحظات', priority: 'الأولوية', assignee: 'المُكلَّف',
+    low: 'منخفض', medium: 'متوسط', high: 'عالٍ', urgent: 'عاجل',
+    deleteCard: '🗑 حذف', noBoardsTitle: 'لا توجد لوحات',
+    focusTitle: 'مؤقت التركيز', startFocus: 'ابدأ', pause: 'إيقاف', reset: 'إعادة تعيين',
+    welcome: 'مرحباً بعودتك', createAccount: 'إنشاء حساب',
+    email: 'البريد الإلكتروني', password: 'كلمة المرور', name: 'اسمك',
+    signIn: 'تسجيل الدخول', signUp: 'إنشاء حساب', orGoogle: 'أو المتابعة مع Google',
+    onbWelcomeTitle: 'مرحباً بك في WeekFlow!', onbWelcomeDesc: 'دعنا نأخذ جولة سريعة للاستفادة القصوى من التطبيق.',
+    onbPlannerTitle: 'مخططك الأسبوعي', onbPlannerDesc: 'أضف المهام لأي يوم، حدد الأولويات، وتابع إنجازاتك.',
+    onbHabitsTitle: 'متتبع العادات', onbHabitsDesc: 'تتبع عاداتك اليومية بشبكة جميلة. ابنِ سلاسل وافز بشارة الأسبوع المثالي!',
+    onbBoardsTitle: 'لوحات الفريق', onbBoardsDesc: 'تعاون مع الآخرين في الوقت الفعلي باستخدام لوحات بأسلوب Trello.',
+    onbFocusTitle: 'مؤقت التركيز', onbFocusDesc: 'استخدم تقنية بومودورو للبقاء مركزاً. 25 دقيقة عمل، 5 دقائق استراحة!',
+    next: 'التالي →', done: 'تم ✓', skipTour: 'تخطي الجولة', stepOf: 'خطوة', of: 'من',
+    landBadge: '✦ نظام الإنتاجية الشخصي',
+    landH1a: 'خطط لأسبوعك.', landH1b: 'ابنِ عاداتك.', landH1c: 'أنجز مشاريعك.',
+    landSub: 'يجمع WeekFlow مخططك الأسبوعي ومتتبع العادات ومؤقت التركيز ولوحات الفريق في تطبيق جميل واحد.',
+    landCTAPrimary: 'ابدأ مجاناً ✦', landCTASecondary: 'لديّ حساب بالفعل',
+    landSignIn: 'تسجيل الدخول', landGetStarted: 'ابدأ مجاناً →',
+    landFreeForever: 'مجاني للأبد', landTools: 'أدوات مدمجة', landTasks: 'مهام وعادات', landAds: 'إعلانات',
+    landFooter: 'صُنع بـ ❤️ · WeekFlow · مجاني للأبد · بلا إعلانات',
+  }
+};
+
+let currentLang = localStorage.getItem('wf_lang') || 'en';
+
+function t(key){ return (TRANSLATIONS[currentLang] || TRANSLATIONS.en)[key] || TRANSLATIONS.en[key] || key; }
+
+window.toggleLangMenu = function(){
+  document.getElementById('lang-menu').classList.toggle('open');
+};
+
+// Close lang menu when clicking outside
+document.addEventListener('click', e => {
+  if(!e.target.closest('#lang-dropdown')) {
+    document.getElementById('lang-menu')?.classList.remove('open');
+  }
+});
+
+window.setLanguage = function(lang){
+  currentLang = lang;
+  localStorage.setItem('wf_lang', lang);
+  const tr = TRANSLATIONS[lang];
+  // Update html dir and lang
+  document.documentElement.setAttribute('dir', tr.dir);
+  document.documentElement.setAttribute('lang', lang);
+  // Update flag/code in button
+  document.getElementById('lang-flag').textContent = tr.flag;
+  document.getElementById('lang-code').textContent = tr.code;
+  // Mark active
+  document.querySelectorAll('.lang-option').forEach(o => o.classList.toggle('active', o.dataset.lang === lang));
+  // Close menu
+  document.getElementById('lang-menu').classList.remove('open');
+  // Apply all translations
+  applyTranslations();
+};
+
+function applyTranslations(){
+  const tr = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+  // Nav tabs
+  const tabMap = {
+    'tab-planner': 'planner', 'tab-dashboard': 'dashboard',
+    'tab-pomodoro': 'focus', 'tab-boards': 'boards', 'tab-habits': 'habits'
+  };
+  Object.entries(tabMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if(el){ el.innerHTML = tr[key] + (id==='tab-pomodoro' ? '<span class="pomo-running-dot" id="pomo-dot"></span>' : ''); }
+  });
+  // Mobile tabs
+  const mobMap = {
+    'mob-tab-planner': 'planner', 'mob-tab-dashboard': 'dashboard',
+    'mob-tab-pomodoro': 'focus', 'mob-tab-boards': 'boards', 'mob-tab-habits': 'habits'
+  };
+  Object.entries(mobMap).forEach(([id, key]) => {
+    const el = document.getElementById(id);
+    if(el){ const icon = el.querySelector('.mn-icon'); const label = el.querySelector('.mn-label'); if(label) label.textContent = tr[key].replace(/^[^\s]+\s/,''); }
+  });
+  // Today btn
+  ['today-btn','mob-today-btn'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = tr.today; });
+  // Search placeholder
+  const si = document.getElementById('search-input'); if(si) si.placeholder = tr.searchPlaceholder;
+  // Sign out
+  document.querySelectorAll('.tb-logout').forEach(b => b.textContent = tr.signOut);
+  // Habits page
+  const ht = document.querySelector('.habits-title'); if(ht) ht.textContent = tr.habitsTitle;
+  const hs = document.querySelector('.habits-subtitle'); if(hs) hs.textContent = tr.habitsSub;
+  const ahb = document.querySelector('.add-habit-btn'); if(ahb) ahb.textContent = tr.addHabit;
+  // Habit stats cards
+  const hscWeekLabel = document.querySelector('#habit-stats-row .habit-stat-card:nth-child(1) .hsc-label'); if(hscWeekLabel) hscWeekLabel.textContent = tr.thisWeek;
+  const hscWeekSub = document.querySelector('#habit-stats-row .habit-stat-card:nth-child(1) .hsc-sub'); if(hscWeekSub) hscWeekSub.textContent = tr.completions;
+  const hscStrLabel = document.querySelector('#habit-stats-row .habit-stat-card:nth-child(2) .hsc-label'); if(hscStrLabel) hscStrLabel.textContent = tr.bestStreak;
+  const hscStrSub = document.querySelector('#habit-stats-row .habit-stat-card:nth-child(2) .hsc-sub'); if(hscStrSub) hscStrSub.textContent = tr.daysRow;
+  const hscRateLabel = document.querySelector('#habit-stats-row .habit-stat-card:nth-child(3) .hsc-label'); if(hscRateLabel) hscRateLabel.textContent = tr.completion;
+  const hscRateSub = document.querySelector('#habit-stats-row .habit-stat-card:nth-child(3) .hsc-sub'); if(hscRateSub) hscRateSub.textContent = tr.thisWeekPct;
+  // Perfect week banner
+  const pwt = document.querySelector('.pwb-title'); if(pwt) pwt.textContent = tr.perfectWeekTitle;
+  const pws = document.querySelector('.pwb-sub'); if(pws) pws.textContent = tr.perfectWeekSub;
+  const pwb = document.querySelector('.pwb-badge'); if(pwb) pwb.textContent = tr.perfectWeekBadge;
+  // Landing page
+  const lb = document.querySelector('.land-badge'); if(lb) lb.textContent = tr.landBadge;
+  const lh = document.querySelector('.land-h1'); if(lh) lh.innerHTML = `${tr.landH1a}<br><span class="grad">${tr.landH1b}</span><br>${tr.landH1c}`;
+  const lsub = document.querySelector('.land-sub'); if(lsub) lsub.textContent = tr.landSub;
+  const lcp = document.querySelector('.land-cta-primary'); if(lcp) lcp.textContent = tr.landCTAPrimary;
+  const lcs = document.querySelector('.land-cta-secondary'); if(lcs) lcs.textContent = tr.landCTASecondary;
+  const lsi = document.querySelector('.land-signin-btn'); if(lsi) lsi.textContent = tr.landSignIn;
+  const lst = document.querySelector('.land-start-btn'); if(lst) lst.textContent = tr.landGetStarted;
+  const lf = document.querySelector('.land-footer'); if(lf) lf.textContent = tr.landFooter;
+  const stats = document.querySelectorAll('.land-stat-label');
+  const statKeys = ['landFreeForever','landTools','landTasks','landAds'];
+  stats.forEach((s,i) => { if(statKeys[i]) s.textContent = tr[statKeys[i]]; });
+  // Modal field labels
+  const lhn = document.getElementById('lbl-habit-name'); if(lhn) lhn.textContent = t('habitName');
+  const hin = document.getElementById('habit-name-input'); if(hin) hin.placeholder = t('habitNamePh');
+  const freqHint = document.getElementById('freq-hint'); if(freqHint) freqHint.textContent = t('freqHintDaily');
+  // Freq buttons
+  const fbtns = document.querySelectorAll('.hfreq-btn');
+  const freqLabels = [t('freqDaily'), t('freqWeekly')];
+  fbtns.forEach((b,i) => { if(freqLabels[i]) b.textContent = freqLabels[i]; });
+  // Onboarding skip btn
+  const skipBtn = document.querySelector('.onb-skip'); if(skipBtn) skipBtn.textContent = t('skipTour');
+  // Re-render dynamic pages if active
+  if(document.getElementById('page-habits')?.classList.contains('active')) renderHabitsGrid();
+}
+
+// Init language on load
+(function initLang(){
+  const lang = localStorage.getItem('wf_lang') || 'en';
+  currentLang = lang;
+  const tr = TRANSLATIONS[lang];
+  document.documentElement.setAttribute('dir', tr.dir);
+  document.documentElement.setAttribute('lang', lang);
+  document.getElementById('lang-flag').textContent = tr.flag;
+  document.getElementById('lang-code').textContent = tr.code;
+  document.querySelectorAll('.lang-option').forEach(o => o.classList.toggle('active', o.dataset.lang === lang));
+  if(lang !== 'en') applyTranslations();
+})();
 
 // ── Auth enter key ────────────────────────
 ['login-email','login-pass'].forEach(id=>{document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')window.emailLogin();});});
