@@ -5,11 +5,11 @@ const FONT_CACHE = 'weekflow-fonts-v1';
 
 // Core app files to cache immediately on install
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // Google Fonts to cache for offline use
@@ -60,6 +60,9 @@ self.addEventListener('fetch', e => {
 
   // Skip non-GET requests
   if (e.request.method !== 'GET') return;
+
+  // Skip requests the Cache API can't store (browser extensions, etc.)
+  if (!url.startsWith('http://') && !url.startsWith('https://')) return;
 
   // ── FONTS: cache-first (fonts don't change) ──
   if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
