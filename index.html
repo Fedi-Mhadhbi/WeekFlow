@@ -851,6 +851,17 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 [dir="rtl"] * {font-family:'Plus Jakarta Sans','Segoe UI',Tahoma,sans-serif;}
 [dir="rtl"] .tb-logo,[dir="rtl"] .habits-title,[dir="rtl"] .dash-title,[dir="rtl"] .land-h1,[dir="rtl"] .lfc-title,[dir="rtl"] .onb-title{font-family:'Fraunces',serif;}
 
+
+/* recurring delete dialog */
+.rd-overlay{position:fixed;inset:0;background:rgba(26,18,8,.55);backdrop-filter:blur(6px);z-index:600;display:flex;align-items:center;justify-content:center;padding:16px;}
+.rd-box{background:var(--white);border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+.rd-title{font-family:'Fraunces',serif;font-size:18px;font-weight:900;color:var(--ink);margin-bottom:6px;}
+.rd-desc{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5;}
+.rd-btn{display:block;width:100%;padding:12px 14px;margin-bottom:8px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;text-align:start;transition:all .15s;}
+.rd-btn:hover{border-color:var(--ink);}
+.rd-btn.danger{border-color:#FF6B6B;color:#FF6B6B;}
+.rd-btn.danger:hover{background:rgba(255,107,107,.1);}
+.rd-cancel{background:transparent;border:none;width:100%;padding:8px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 
 /* ══ POMODORO PAGE ══════════════════════════ */
@@ -2209,25 +2220,23 @@ function render(){
         if(didSwipe && diff<-70){
           // Confirmed swipe-to-delete
           haptic([50,30,100]);
-          item.style.transform='translateX(-100%)';
-          item.style.opacity='0';
-          setTimeout(async ()=>{
-            // If recurring task instance — add date to skippedDates so it doesn't reappear
-            if(task.sourceRecurId){
-              const dates=getWeekDates(weekOffset);
-              const dayKey=dates[i].toISOString().slice(0,10);
-              const recIdx=recurringTasks.findIndex(r=>r.id===task.sourceRecurId);
-              if(recIdx>=0){
-                const skipped=new Set(recurringTasks[recIdx].skippedDates||[]);
-                skipped.add(dayKey);
-                recurringTasks[recIdx].skippedDates=[...skipped];
-                await saveUserMeta();
+          (async()=>{
+            const isRec=!!(task.sourceRecurId||task.recurring);
+            let choice;
+            if(isRec){
+              choice=await askRecurDelete();
+              if(!choice){
+                item.style.transition='transform 0.2s ease';
+                item.style.transform='';
+                deleteBg.style.opacity='0';
+                setTimeout(()=>{ item.style.transition=''; },200);
+                return;
               }
             }
-            const tasks=(weekData[i]||[]).filter(x=>x.id!==task.id);
-            weekData[i]=tasks;await saveDay(i,tasks);render();
-            showToast('🗑️ Task deleted');
-          },280);
+            item.style.transform='translateX(-100%)';
+            item.style.opacity='0';
+            setTimeout(()=>{ smartDeleteTask(i, task, choice); },280);
+          })();
         } else {
           // Normal tap or short swipe — snap back, do NOT delete
           item.style.transition='transform 0.2s ease';
@@ -2280,20 +2289,7 @@ function render(){
     btn.addEventListener('click', async ()=>{
       const dayI=parseInt(btn.dataset.day),id=btn.dataset.id;
       const task=(weekData[dayI]||[]).find(t=>t.id===id);
-      // If it's a recurring task instance, add this date to skippedDates
-      if(task && task.sourceRecurId){
-        const dates=getWeekDates(weekOffset);
-        const dayKey=dates[dayI].toISOString().slice(0,10);
-        const recIdx=recurringTasks.findIndex(r=>r.id===task.sourceRecurId);
-        if(recIdx>=0){
-          const skipped=new Set(recurringTasks[recIdx].skippedDates||[]);
-          skipped.add(dayKey);
-          recurringTasks[recIdx].skippedDates=[...skipped];
-          await saveUserMeta();
-        }
-      }
-      const tasks=(weekData[dayI]||[]).filter(x=>x.id!==id);
-      weekData[dayI]=tasks;await saveDay(dayI,tasks);render();showToast('🗑️ Removed');
+      if(task) await smartDeleteTask(dayI, task);
     });
   });
   // Mobile day label + button
@@ -2521,6 +2517,103 @@ async function removeRecurringTask(taskId){
   if(recurringTasks.length !== before) await saveUserMeta();
 }
 
+// ── Smart delete for recurring tasks ──
+function askRecurDelete(){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.className='rd-overlay';
+    ov.innerHTML=`<div class="rd-box">
+      <div class="rd-title">${t('recurDelTitle')}</div>
+      <div class="rd-desc">${t('recurDelDesc')}</div>
+      <button class="rd-btn" data-c="one">${t('recurDelOne')}</button>
+      <button class="rd-btn danger" data-c="future">${t('recurDelFuture')}</button>
+      <button class="rd-btn danger" data-c="all">${t('recurDelAll')}</button>
+      <button class="rd-cancel" data-c="">${t('cancel')}</button>
+    </div>`;
+    ov.addEventListener('click',e=>{
+      const b=e.target.closest('[data-c]');
+      if(b||e.target===ov){ ov.remove(); resolve(b?b.dataset.c:''); }
+    });
+    document.body.appendChild(ov);
+  });
+}
+
+async function deleteRecurringSeries(recId, mode, dayI){
+  showSaving(true);
+  const curWk = weekKey(weekOffset);
+  // 1) Update the rule FIRST so the live listener doesn't re-create tasks
+  if(mode==='all'){
+    recurringTasks = recurringTasks.filter(r=>r.id!==recId);
+  } else {
+    const rec = recurringTasks.find(r=>r.id===recId);
+    if(rec){ rec.stopWeek=curWk; rec.stopDayIdx=dayI; }
+  }
+  await saveUserMeta();
+  // 2) Remove generated tasks from every saved week
+  await loadAllWeeks();
+  const writes=[];
+  for(const [wk,days] of Object.entries(allWeekData)){
+    const changedDays={};
+    for(const [idxStr,list] of Object.entries(days||{})){
+      const idx=parseInt(idxStr);
+      if(mode==='future'){
+        if(wk<curWk || (wk===curWk && idx<dayI)) continue;
+      }
+      if(!Array.isArray(list)) continue;
+      const kept=list.filter(x=>x.sourceRecurId!==recId && x.id!==recId);
+      if(kept.length!==list.length) changedDays[idx]=kept;
+    }
+    if(Object.keys(changedDays).length){
+      writes.push(()=>setDoc(weekRef(currentUser.uid,wk),{days:changedDays},{merge:true}));
+      for(const [idx,kept] of Object.entries(changedDays)){ allWeekData[wk][idx]=kept; }
+    }
+  }
+  try{
+    for(let i=0;i<writes.length;i+=20){
+      await Promise.all(writes.slice(i,i+20).map(w=>w()));
+    }
+    showSaving(false);
+  }catch(e){ showSaving(true,true); showToast('⚠️ Save failed. Check connection.'); }
+  // 3) Refresh the current view
+  for(const idxStr of Object.keys(weekData||{})){
+    const idx=parseInt(idxStr);
+    if(mode==='all' || idx>=dayI){
+      weekData[idx]=(weekData[idx]||[]).filter(x=>x.sourceRecurId!==recId && x.id!==recId);
+    }
+  }
+  render();
+  showToast(t('recurDeleted'));
+}
+
+async function smartDeleteTask(dayI, task, preChoice){
+  const recId = task ? (task.sourceRecurId || (task.recurring ? task.id : null)) : null;
+  let choice='one';
+  if(recId){
+    choice = preChoice!==undefined ? preChoice : await askRecurDelete();
+    if(!choice) return false;
+  }
+  if(recId && choice!=='one'){
+    await deleteRecurringSeries(recId, choice, dayI);
+    return true;
+  }
+  // Single-day delete (also remember the date so it doesn't re-appear)
+  if(recId){
+    const dates=getWeekDates(weekOffset);
+    const dayKey=dates[dayI].toISOString().slice(0,10);
+    const recIdx=recurringTasks.findIndex(r=>r.id===recId);
+    if(recIdx>=0){
+      const skipped=new Set(recurringTasks[recIdx].skippedDates||[]);
+      skipped.add(dayKey);
+      recurringTasks[recIdx].skippedDates=[...skipped];
+      await saveUserMeta();
+    }
+  }
+  const tasks=(weekData[dayI]||[]).filter(x=>x.id!==task.id);
+  weekData[dayI]=tasks; await saveDay(dayI,tasks); render();
+  showToast('🗑️ Removed');
+  return true;
+}
+
 // Called when loading a week — inject any recurring tasks that should appear
 async function injectRecurringTasks(weekDays){
   if(!recurringTasks.length) return;
@@ -2555,6 +2648,8 @@ async function injectRecurringTasks(weekDays){
       if(endDate && dayDate > endDate) continue;
       // Skip if user manually deleted on this date
       if(skipped.has(dayKey)) continue;
+      // Skip if the series was stopped from an earlier day
+      { const wkNow=weekKey(weekOffset); if(rec.stopWeek && (wkNow>rec.stopWeek || (wkNow===rec.stopWeek && i>=rec.stopDayIdx))) continue; }
 
       // Check if this day matches the recurring pattern
       const shouldAppear = rec.recurring==='daily'
@@ -4188,6 +4283,10 @@ const TRANSLATIONS = {
     dayStreak: 'day streak', removeHabit: 'Remove this habit? All your check-ins will be lost.',
     habitAdded: '🎯 Habit added!', habitRemoved: '🗑️ Habit removed', enterHabitName: '⚠️ Enter a habit name',
     week: 'Week',
+    recurDelTitle: 'Delete recurring task', recurDelDesc: 'This task repeats. What do you want to delete?',
+    recurDelOne: 'Only this day', recurDelFuture: 'This day and all future days', recurDelAll: 'All of them (whole series)',
+    recurDeleted: '🗑️ Recurring task deleted',
+
     daysShort: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
     daysFull: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
     monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
@@ -4250,6 +4349,10 @@ const TRANSLATIONS = {
     dayStreak: 'jours de suite', removeHabit: 'Supprimer cette habitude ? Toutes vos données seront perdues.',
     habitAdded: '🎯 Habitude ajoutée !', habitRemoved: '🗑️ Habitude supprimée', enterHabitName: '⚠️ Entrez un nom',
     week: 'Semaine',
+    recurDelTitle: 'Supprimer la tâche récurrente', recurDelDesc: 'Cette tâche se répète. Que voulez-vous supprimer ?',
+    recurDelOne: 'Seulement ce jour', recurDelFuture: 'Ce jour et tous les jours suivants', recurDelAll: 'Toutes (toute la série)',
+    recurDeleted: '🗑️ Tâche récurrente supprimée',
+
     daysShort: ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],
     daysFull: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'],
     monthsShort: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
@@ -4307,6 +4410,10 @@ const TRANSLATIONS = {
     dayStreak: 'أيام متتالية', removeHabit: 'حذف هذه العادة؟ ستُفقد جميع بياناتك.',
     habitAdded: '🎯 تمت إضافة العادة!', habitRemoved: '🗑️ تم حذف العادة', enterHabitName: '⚠️ أدخل اسم العادة',
     week: 'الأسبوع',
+    recurDelTitle: 'حذف المهمة المتكررة', recurDelDesc: 'هذه المهمة تتكرر. ماذا تريد أن تحذف؟',
+    recurDelOne: 'هذا اليوم فقط', recurDelFuture: 'هذا اليوم وكل الأيام القادمة', recurDelAll: 'الكل (السلسلة كاملة)',
+    recurDeleted: '🗑️ تم حذف المهمة المتكررة',
+
     daysShort: ['اثن','ثلا','أرب','خمي','جمع','سبت','أحد'],
     daysFull: ['الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت','الأحد'],
     monthsShort: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
