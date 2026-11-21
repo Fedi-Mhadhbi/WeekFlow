@@ -224,7 +224,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .day-cell.drag-over{background:rgba(69,170,242,.06);border-radius:10px;outline:2px dashed rgba(69,170,242,.4);}
 
 /* Task card */
-.cell-task{display:flex;align-items:flex-start;gap:7px;padding:8px 9px;border-radius:9px;background:var(--bg);border:1px solid var(--border);transition:transform .15s,box-shadow .15s,opacity .2s;animation:taskPop .2s ease both;position:relative;overflow:hidden;cursor:grab;}
+.cell-task{display:flex;align-items:flex-start;gap:7px;padding:8px 9px;border-radius:9px;background:var(--bg);border:1px solid var(--border);transition:transform .15s,box-shadow .15s,opacity .2s;position:relative;overflow:hidden;cursor:grab;}
+.cell-task.pop-in{animation:taskPop .2s ease both;}
 .cell-task:active{cursor:grabbing;}
 .cell-task::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px;}
 .cell-task.p-high::before{background:#FF6B6B;} .cell-task.p-medium::before{background:#FF9F43;} .cell-task.p-low::before{background:#26de81;}
@@ -253,8 +254,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .emoji-picker.show{display:flex;}
 .emoji-opt{font-size:20px;cursor:pointer;padding:4px;border-radius:6px;transition:background .15s;}
 .emoji-opt:hover{background:var(--bg);}
-.ct-del{width:18px;height:18px;border-radius:5px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;opacity:0;transition:all .15s;flex-shrink:0;}
-.cell-task:hover .ct-del{opacity:1;} .ct-del:hover{background:rgba(255,107,107,.12);color:#FF6B6B;}
+.ct-del{width:22px;height:22px;border-radius:6px;border:none;background:#FF6B6B;color:#fff;cursor:pointer;font-size:12px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;opacity:1;transition:all .15s;flex-shrink:0;box-shadow:0 1px 4px rgba(255,107,107,.35);}
+.ct-del:hover{background:#e84d4d;transform:scale(1.1);} .ct-del:active{transform:scale(.95);}
 .add-task-btn{width:100%;border:1.5px dashed var(--border);border-radius:9px;background:transparent;padding:7px;color:var(--muted);font-size:11px;cursor:pointer;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:4px;margin-top:4px;}
 .add-task-btn:hover{border-color:var(--ink);background:var(--bg);color:var(--ink);}
 
@@ -543,7 +544,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .col-cards.drag-over{background:rgba(69,170,242,.06);border-radius:10px;outline:2px dashed rgba(69,170,242,.3);}
 
 /* Kanban card */
-.k-card{background:var(--white);border-radius:10px;padding:12px 13px;border:1px solid var(--border);cursor:pointer;transition:transform .15s,box-shadow .15s;animation:taskPop .2s ease both;position:relative;}
+.k-card{background:var(--white);border-radius:10px;padding:12px 13px;border:1px solid var(--border);cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative;}
 .k-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
 .k-card.dragging{opacity:.4;transform:scale(.97);}
 .k-card-title{font-size:13px;font-weight:600;color:var(--ink);line-height:1.4;margin-bottom:6px;}
@@ -554,8 +555,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .k-card-pri.medium{background:rgba(255,159,67,.15);color:#FF9F43;}
 .k-card-pri.low{background:rgba(38,222,129,.15);color:#26de81;}
 .k-card-assignee{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#45aaf2,#a29bfe);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;margin-left:auto;}
-.k-card-del{position:absolute;top:8px;right:8px;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:11px;opacity:0;transition:opacity .15s;}
-.k-card:hover .k-card-del{opacity:1;}
+.k-card-del{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:6px;background:#FF6B6B;border:none;color:#fff;cursor:pointer;font-size:12px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;opacity:1;transition:all .15s;box-shadow:0 1px 4px rgba(255,107,107,.35);}
+.k-card-del:hover{background:#e84d4d;transform:scale(1.1);}
 
 /* Add card btn */
 .add-card-btn{width:100%;padding:9px 14px;border:1.5px dashed var(--border);border-radius:9px;background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;text-align:left;transition:all .2s;font-family:'Plus Jakarta Sans',sans-serif;display:flex;align-items:center;gap:6px;margin:0 10px 10px;width:calc(100% - 20px);}
@@ -832,22 +833,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .lang-option .lang-flag{font-size:16px;}
 
 /* RTL support */
-[dir="rtl"] .topbar{flex-direction:row-reverse;}
 [dir="rtl"] .tb-tabs{margin-right:0;margin-left:auto;}
-[dir="rtl"] .tb-right{flex-direction:row-reverse;}
-[dir="rtl"] .task-row{flex-direction:row-reverse;}
 [dir="rtl"] .day-col{text-align:right;}
 [dir="rtl"] .add-task-input{text-align:right;}
 [dir="rtl"] .modal{text-align:right;}
-[dir="rtl"] .modal-btns{flex-direction:row-reverse;}
-[dir="rtl"] .habits-header{flex-direction:row-reverse;}
-[dir="rtl"] .habit-row-label{flex-direction:row-reverse;}
-[dir="rtl"] .land-nav{flex-direction:row-reverse;}
 [dir="rtl"] .land-hero{direction:rtl;}
-[dir="rtl"] .board-topbar{flex-direction:row-reverse;}
-[dir="rtl"] .hg-corner{flex-direction:row-reverse;}
-[dir="rtl"] .search-wrap{flex-direction:row-reverse;}
-[dir="rtl"] .onb-btns{flex-direction:row-reverse;}
 [dir="rtl"] * {font-family:'Plus Jakarta Sans','Segoe UI',Tahoma,sans-serif;}
 [dir="rtl"] .tb-logo,[dir="rtl"] .habits-title,[dir="rtl"] .dash-title,[dir="rtl"] .land-h1,[dir="rtl"] .lfc-title,[dir="rtl"] .onb-title{font-family:'Fraunces',serif;}
 
@@ -862,6 +852,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .rd-btn.danger{border-color:#FF6B6B;color:#FF6B6B;}
 .rd-btn.danger:hover{background:rgba(255,107,107,.1);}
 .rd-cancel{background:transparent;border:none;width:100%;padding:8px;font-size:12px;color:var(--muted);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;}
+
+/* RTL fixes */
+[dir="rtl"] .tb-nav-btn{transform:scaleX(-1);}
+[dir="rtl"] .hg-corner,[dir="rtl"] .habit-row-label,[dir="rtl"] .hg-summary-label{left:auto;right:0;}
+[dir="rtl"] .habit-row-label{border-right:none;border-left:2px solid var(--border);}
+[dir="rtl"] .search-results{right:auto;left:0;}
+[dir="rtl"] .lang-menu{right:auto;left:0;}
+[dir="rtl"] .modal,[dir="rtl"] .modal input,[dir="rtl"] .modal textarea,[dir="rtl"] .modal select{text-align:right;}
+[dir="rtl"] .k-card-del{right:auto;left:8px;}
 ::-webkit-scrollbar{width:5px;height:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
 
 /* ══ POMODORO PAGE ══════════════════════════ */
@@ -1931,7 +1930,7 @@ const QUOTES = [
   {text:"Action is the foundational key to all success.",author:"Pablo Picasso"},
 ];
 const MOTIVS = [
-  {min:100,emoji:'🏆',text:'Perfect week! You crushed it!',sub:'100% completion — absolutely legendary.'},
+  {min:100,emoji:'🏆',text:'Perfect week! You crushed it!',sub:'Absolutely legendary.'},
   {min:80, emoji:'🎉',text:'Amazing work this week!',sub:'Keep this momentum going!'},
   {min:60, emoji:'💪',text:'Solid progress!',sub:'More than halfway through — keep pushing!'},
   {min:40, emoji:'📈',text:'Good start — keep going!',sub:'Every completed task counts.'},
@@ -1949,6 +1948,8 @@ let notifSettings = {morning:false,weekly:false,complete:false,time:'08:00'};
 let notifLog    = [];
 let notifInterval = null;
 let unsubWeek   = null;
+const seenTaskIds = new Set(); // tasks already shown once (animate only new ones)
+let lastWeekSig = '';
 
 // ── Helpers ───────────────────────────────
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
@@ -1996,9 +1997,14 @@ async function loadAllWeeks(){
 
 function listenWeek(wk){
   if(unsubWeek)unsubWeek();
+  lastWeekSig='';
   unsubWeek=onSnapshot(weekRef(currentUser.uid,wk),async snap=>{
-    weekData=snap.exists()?(snap.data().days||{}):{};;
+    weekData=snap.exists()?(snap.data().days||{}):{};
     await injectRecurringTasks(weekData);
+    // Skip re-render when nothing visible changed (prevents blinking)
+    const sig=JSON.stringify(weekData);
+    if(sig===lastWeekSig) return;
+    lastWeekSig=sig;
     render(); checkMotivation();
   });
 }
@@ -2111,7 +2117,7 @@ function render(){
     th.className=`col-${DAY_COLORS[i]} ${isToday(date)?'today-col':''}`;
     const dayMonths = t('monthsShort');
     const taskWord = tasks.length===1 ? t('task') : t('tasks');
-    th.innerHTML=`<div class="day-header"><div class="day-name">${DAYS()[i]}</div><div class="day-date">${date.getDate()}</div><div class="day-month">${dayMonths[date.getMonth()]}</div><div class="day-count">${tasks.length} ${taskWord} · ${dc} ${t('done')}</div></div>`;
+    th.innerHTML=`<div class="day-header"><div class="day-name">${DAYS()[i]}</div><div class="day-date">${date.getDate()}</div><div class="day-month">${dayMonths[date.getMonth()]}</div><div class="day-count">${tasks.length} ${taskWord} · ${dc} ${t('doneWord')}</div></div>`;
     hRow.appendChild(th);
   });
 
@@ -2137,7 +2143,7 @@ function render(){
         <div class="mdl-num" style="${!isToday(date)?'color:'+dayColor:''}">${date.getDate()}</div>
         <div>
           <div class="mdl-day" style="${!isToday(date)?'color:'+dayColor:''}">${DAYS_FULL()[i]}</div>
-          <div class="mdl-date">${t('monthsFull')[date.getMonth()]} ${date.getFullYear()} · ${tasks_count} ${tasks_count===1?t('task'):t('tasks')} · ${done_count} ${t('done')}</div>
+          <div class="mdl-date">${t('monthsFull')[date.getMonth()]} ${date.getFullYear()} · ${tasks_count} ${tasks_count===1?t('task'):t('tasks')} · ${done_count} ${t('doneWord')}</div>
         </div>
       </div>
       <button class="mdl-add" data-day="${i}" title="Add task">+</button>
@@ -2165,7 +2171,8 @@ function render(){
 
     tasks.forEach(task=>{
       const item=document.createElement('div');
-      item.className=`cell-task p-${task.priority} ${task.done?'done-task':''}`;
+      item.className=`cell-task p-${task.priority} ${task.done?'done-task':''} ${seenTaskIds.has(task.id)?'':'pop-in'}`;
+      seenTaskIds.add(task.id);
       item.draggable=true;
       item.dataset.id=task.id;
       item.innerHTML=`
@@ -2339,7 +2346,7 @@ function spawnConfetti(){
 function openModal(dayIdx){
   const dates=getWeekDates(weekOffset),badge=document.getElementById('modal-badge'),color=DAY_COLOR_VALS[dayIdx];
   badge.style.background=color+'18';badge.style.color=color;badge.style.border=`1.5px solid ${color}40`;
-  badge.textContent=`${DAYS_FULL()[dayIdx]} · ${dates[dayIdx].toLocaleDateString('en-US',{month:'long',day:'numeric'})}`;
+  badge.textContent=`${DAYS_FULL()[dayIdx]} · ${t('monthsFull')[dates[dayIdx].getMonth()]+' '+dates[dayIdx].getDate()}`;
   document.getElementById('m-text').value='';
   document.getElementById('m-notes').value='';
   document.getElementById('m-recur-toggle').checked=false;
@@ -2620,7 +2627,7 @@ async function injectRecurringTasks(weekDays){
   const dates = getWeekDates(weekOffset);
   const dayNames = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
   const today = new Date(); today.setHours(0,0,0,0);
-  let changed = false;
+  const changedDays = new Set();
 
   for(const rec of recurringTasks){
     // Parse start date — never inject before this date
@@ -2660,18 +2667,17 @@ async function injectRecurringTasks(weekDays){
       if(!shouldAppear) continue;
 
       const dayTasks = weekDays[i]||[];
-      const alreadyHere = dayTasks.some(t=>t.sourceRecurId===rec.id);
+      const alreadyHere = dayTasks.some(t=>t.sourceRecurId===rec.id || t.id===rec.id);
       if(!alreadyHere){
-        const newTask={...rec,id:uid(),sourceRecurId:rec.id,done:false};
+        const {skippedDates,stopWeek,stopDayIdx,...recBase}=rec;
+        const newTask={...recBase,id:uid(),sourceRecurId:rec.id,done:false};
         weekDays[i]=[...dayTasks,newTask];
-        changed=true;
+        changedDays.add(i);
       }
     }
   }
-  if(changed){
-    for(let i=0;i<7;i++){
-      if(weekDays[i]) await saveDay(i,weekDays[i]);
-    }
+  for(const i of changedDays){
+    await saveDay(i,weekDays[i]);
   }
 }
 
@@ -3200,7 +3206,7 @@ function renderDashboard(){
   const hist=document.getElementById('week-history');if(!hist)return;hist.innerHTML='';
   weekRates.slice(0,6).forEach(({wk,rate,total,done})=>{
     const d=new Date(wk+'T00:00:00');
-    const label=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const label=t('monthsShort')[d.getMonth()]+' '+d.getDate();
     const row=document.createElement('div');row.className='week-row';
     row.innerHTML=`<div class="week-row-label">Week of ${label}</div><div class="week-row-bar-wrap"><div class="week-row-bar" style="width:${rate}%"></div></div><div class="week-row-pct">${rate}%</div>`;
     hist.appendChild(row);
@@ -3311,7 +3317,7 @@ function runSearch(q){
   searchResults.innerHTML = results.slice(0,12).map(({task, dayIdx, wk, weekDate})=>{
     const color = DAY_COLOR_VALS[dayIdx];
     const dayName = DAYS_FULL()[dayIdx];
-    const dateStr = weekDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const dateStr = t('monthsShort')[weekDate.getMonth()]+' '+weekDate.getDate()+', '+weekDate.getFullYear();
     const doneStyle = task.done ? 'text-decoration:line-through;opacity:.5;' : '';
     return `<div class="search-result-item" data-wk="${wk}" data-day="${dayIdx}">
       <div class="sr-dot" style="background:${color}"></div>
@@ -4292,7 +4298,7 @@ const TRANSLATIONS = {
     monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
     monthsFull: ['January','February','March','April','May','June','July','August','September','October','November','December'],
     everyDay: ['Every Monday','Every Tuesday','Every Wednesday','Every Thursday','Every Friday','Every Saturday','Every Sunday'],
-    task: 'task', tasks: 'tasks', done: 'done',
+    task: 'task', tasks: 'tasks', doneWord: 'done',
     // Boards
     newBoard: '+ New Board', boardName: 'Board Name', boardColor: 'Board Color',
     createBoard: 'Create Board ✦', invite: '👥 Invite', deleteBoard: '🗑 Delete Board',
@@ -4358,7 +4364,7 @@ const TRANSLATIONS = {
     monthsShort: ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'],
     monthsFull: ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'],
     everyDay: ['Chaque Lundi','Chaque Mardi','Chaque Mercredi','Chaque Jeudi','Chaque Vendredi','Chaque Samedi','Chaque Dimanche'],
-    task: 'tâche', tasks: 'tâches', done: 'faite',
+    task: 'tâche', tasks: 'tâches', doneWord: 'faites',
     newBoard: '+ Nouveau Tableau', boardName: 'Nom du tableau', boardColor: 'Couleur',
     createBoard: 'Créer ✦', invite: '👥 Inviter', deleteBoard: '🗑 Supprimer',
     inviteByEmail: 'Inviter par email', inviteBtn: 'Envoyer',
@@ -4419,7 +4425,7 @@ const TRANSLATIONS = {
     monthsShort: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
     monthsFull: ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'],
     everyDay: ['كل اثنين','كل ثلاثاء','كل أربعاء','كل خميس','كل جمعة','كل سبت','كل أحد'],
-    task: 'مهمة', tasks: 'مهام', done: 'منجزة',
+    task: 'مهمة', tasks: 'مهام', doneWord: 'منجزة',
     newBoard: '+ لوحة جديدة', boardName: 'اسم اللوحة', boardColor: 'اللون',
     createBoard: 'إنشاء ✦', invite: '👥 دعوة', deleteBoard: '🗑 حذف',
     inviteByEmail: 'دعوة بالبريد الإلكتروني', inviteBtn: 'إرسال',
@@ -4436,12 +4442,12 @@ const TRANSLATIONS = {
     onbHabitsTitle: 'متتبع العادات', onbHabitsDesc: 'تتبع عاداتك اليومية بشبكة جميلة. ابنِ سلاسل وافز بشارة الأسبوع المثالي!',
     onbBoardsTitle: 'لوحات الفريق', onbBoardsDesc: 'تعاون مع الآخرين في الوقت الفعلي باستخدام لوحات بأسلوب Trello.',
     onbFocusTitle: 'مؤقت التركيز', onbFocusDesc: 'استخدم تقنية بومودورو للبقاء مركزاً. 25 دقيقة عمل، 5 دقائق استراحة!',
-    next: 'التالي →', done: 'تم ✓', skipTour: 'تخطي الجولة', stepOf: 'خطوة', of: 'من',
+    next: 'التالي ←', done: 'تم ✓', skipTour: 'تخطي الجولة', stepOf: 'خطوة', of: 'من',
     landBadge: '✦ نظام الإنتاجية الشخصي',
     landH1a: 'خطط لأسبوعك.', landH1b: 'ابنِ عاداتك.', landH1c: 'أنجز مشاريعك.',
     landSub: 'يجمع WeekFlow مخططك الأسبوعي ومتتبع العادات ومؤقت التركيز ولوحات الفريق في تطبيق جميل واحد.',
     landCTAPrimary: 'ابدأ مجاناً ✦', landCTASecondary: 'لديّ حساب بالفعل',
-    landSignIn: 'تسجيل الدخول', landGetStarted: 'ابدأ مجاناً →',
+    landSignIn: 'تسجيل الدخول', landGetStarted: 'ابدأ مجاناً ←',
     landFreeForever: 'مجاني للأبد', landTools: 'أدوات مدمجة', landTasks: 'مهام وعادات', landAds: 'إعلانات',
     landFooter: 'صُنع بـ ❤️ · WeekFlow · مجاني للأبد · بلا إعلانات',
   }
@@ -4555,7 +4561,105 @@ function applyTranslations(){
 
   // Re-render dynamic pages if active
   if(document.getElementById('page-habits')?.classList.contains('active')) renderHabitsGrid();
+  i18nApplyAll();
 }
+
+
+// ══ AUTO-TRANSLATION LAYER (static + dynamic text) ═══
+const UI_TRIPLES = [["LOADING WEEKFLOW PRO...", "CHARGEMENT DE WEEKFLOW PRO...", "جارٍ تحميل WEEKFLOW PRO..."], ["📅 Weekly Planner", "📅 Agenda hebdomadaire", "📅 المخطط الأسبوعي"], ["🎯 Habit Tracker", "🎯 Suivi des habitudes", "🎯 متتبع العادات"], ["🗂️ Team Boards", "🗂️ Tableaux d’équipe", "🗂️ لوحات الفريق"], ["🍅 Focus Timer", "🍅 Minuteur Focus", "🍅 مؤقت التركيز"], ["📊 Dashboard", "📊 Tableau de bord", "📊 لوحة التحكم"], ["7-Day Planner", "Agenda sur 7 jours", "مخطط 7 أيام"], ["Plan every day of your week with drag-and-drop tasks, priorities, and categories.", "Planifiez chaque jour de votre semaine avec des tâches en glisser-déposer, des priorités et des catégories.", "خطط لكل يوم من أسبوعك بمهام قابلة للسحب والإفلات وأولويات وفئات."], ["Habit Tracker", "Suivi des habitudes", "متتبع العادات"], ["Build consistency with a beautiful grid tracker. Streaks, colors, and perfect week badges.", "Construisez de la constance avec une belle grille. Séries, couleurs et badges de semaine parfaite.", "ابنِ الاتساق بشبكة جميلة. سلاسل وألوان وشارات الأسبوع المثالي."], ["Team Boards", "Tableaux d’équipe", "لوحات الفريق"], ["Collaborate with your team in real-time with Trello-style kanban boards.", "Collaborez en temps réel avec votre équipe grâce à des tableaux kanban de type Trello.", "تعاون مع فريقك في الوقت الفعلي عبر لوحات كانبان بأسلوب Trello."], ["Focus Timer", "Minuteur Focus", "مؤقت التركيز"], ["Stay in the zone with Pomodoro sessions. Track your focus hours daily.", "Restez concentré avec des sessions Pomodoro. Suivez vos heures de concentration chaque jour.", "حافظ على تركيزك بجلسات بومودورو. تتبع ساعات تركيزك يومياً."], ["Dashboard", "Tableau de bord", "لوحة التحكم"], ["See your productivity at a glance. Weekly completion charts and insights.", "Visualisez votre productivité en un coup d’œil. Graphiques et analyses hebdomadaires.", "اطلع على إنتاجيتك بنظرة واحدة. رسوم بيانية وتحليلات أسبوعية."], ["Cloud Sync", "Synchronisation cloud", "المزامنة السحابية"], ["Your data syncs instantly across all your devices. Access anywhere, anytime.", "Vos données se synchronisent instantanément sur tous vos appareils. Accédez-y partout, à tout moment.", "تتم مزامنة بياناتك فوراً عبر جميع أجهزتك. استخدمها في أي مكان وأي وقت."], ["Sign Up", "Inscription", "إنشاء حساب"], ["Email", "E-mail", "البريد الإلكتروني"], ["Password", "Mot de passe", "كلمة المرور"], ["Sign In →", "Se connecter →", "تسجيل الدخول ←"], ["Your Name", "Votre nom", "اسمك"], ["Create Account →", "Créer un compte →", "إنشاء حساب ←"], ["or", "ou", "أو"], ["Continue with Google", "Continuer avec Google", "المتابعة باستخدام Google"], ["Min 6 characters", "6 caractères minimum", "6 أحرف على الأقل"], ["Email already registered.", "E-mail déjà enregistré.", "البريد الإلكتروني مسجّل مسبقاً."], ["Invalid email address.", "Adresse e-mail invalide.", "عنوان بريد إلكتروني غير صالح."], ["Incorrect password.", "Mot de passe incorrect.", "كلمة المرور غير صحيحة."], ["No account found.", "Aucun compte trouvé.", "لم يتم العثور على حساب."], ["Too many attempts. Try later.", "Trop de tentatives. Réessayez plus tard.", "محاولات كثيرة. حاول لاحقاً."], ["Something went wrong.", "Une erreur s’est produite.", "حدث خطأ ما."], ["Please fill all fields.", "Veuillez remplir tous les champs.", "يرجى ملء جميع الحقول."], ["Planner", "Agenda", "المخطط"], ["Focus", "Focus", "التركيز"], ["Boards", "Tableaux", "اللوحات"], ["Habits", "Habitudes", "العادات"], ["Today", "Aujourd’hui", "اليوم"], ["📲 Install App", "📲 Installer l’app", "📲 تثبيت التطبيق"], ["Install App", "Installer l’app", "تثبيت التطبيق"], ["Sign Out", "Déconnexion", "تسجيل الخروج"], ["Toggle dark mode", "Basculer le mode sombre", "تبديل الوضع الداكن"], ["Search", "Rechercher", "بحث"], ["Install WeekFlow", "Installer WeekFlow", "تثبيت WeekFlow"], ["Add to home screen for the best experience", "Ajoutez à l’écran d’accueil pour une meilleure expérience", "أضِف إلى الشاشة الرئيسية لأفضل تجربة"], ["Install", "Installer", "تثبيت"], ["📡 You are offline — your tasks are saved locally and will sync when you reconnect", "📡 Vous êtes hors ligne — vos tâches sont enregistrées localement et seront synchronisées à la reconnexion", "📡 أنت غير متصل — مهامك محفوظة محلياً وستتم مزامنتها عند عودة الاتصال"], ["Add task", "Ajouter une tâche", "إضافة مهمة"], ["● HIGH", "● ÉLEVÉE", "● عالية"], ["● High", "● Élevée", "● عالية"], ["● Medium", "● Moyenne", "● متوسطة"], ["● Low", "● Faible", "● منخفضة"], ["● high", "● élevée", "● عالية"], ["● medium", "● moyenne", "● متوسطة"], ["● low", "● faible", "● منخفضة"], ["💼 work", "💼 travail", "💼 عمل"], ["🏠 personal", "🏠 personnel", "🏠 شخصي"], ["🛒 shopping", "🛒 courses", "🛒 تسوق"], ["💪 health", "💪 santé", "💪 صحة"], ["🏷️ Custom", "🏷️ Personnalisé", "🏷️ مخصص"], ["🔁 Daily", "🔁 Quotidien", "🔁 يومي"], ["🔁 Weekly", "🔁 Hebdomadaire", "🔁 أسبوعي"], ["🔁 Mondays", "🔁 Lundis", "🔁 أيام الاثنين"], ["🔁 Tuesdays", "🔁 Mardis", "🔁 أيام الثلاثاء"], ["🔁 Wednesdays", "🔁 Mercredis", "🔁 أيام الأربعاء"], ["🔁 Thursdays", "🔁 Jeudis", "🔁 أيام الخميس"], ["🔁 Fridays", "🔁 Vendredis", "🔁 أيام الجمعة"], ["🔁 Saturdays", "🔁 Samedis", "🔁 أيام السبت"], ["🔁 Sundays", "🔁 Dimanches", "🔁 أيام الأحد"], ["Add New Task", "Ajouter une tâche", "إضافة مهمة جديدة"], ["Task Name", "Nom de la tâche", "اسم المهمة"], ["What needs to be done?", "Que faut-il faire ?", "ما الذي يجب إنجازه؟"], ["Notes (optional)", "Notes (facultatif)", "ملاحظات (اختياري)"], ["Add details, links, context...", "Ajoutez des détails, liens, contexte...", "أضف تفاصيل وروابط وسياق..."], ["Add details, links, reminders...", "Ajoutez des détails, liens, rappels...", "أضف تفاصيل وروابط وتذكيرات..."], ["Extra details, links, reminders...", "Détails supplémentaires, liens, rappels...", "تفاصيل إضافية وروابط وتذكيرات..."], ["Category", "Catégorie", "الفئة"], ["💼 Work", "💼 Travail", "💼 عمل"], ["🏠 Personal", "🏠 Personnel", "🏠 شخصي"], ["🛒 Shopping", "🛒 Courses", "🛒 تسوق"], ["💪 Health", "💪 Santé", "💪 صحة"], ["✏️ Custom...", "✏️ Personnalisé...", "✏️ مخصص..."], ["e.g. Finance, Family, Gym...", "ex. Finance, Famille, Sport...", "مثال: مالية، عائلة، رياضة..."], ["🔁 Recurring task?", "🔁 Tâche récurrente ?", "🔁 مهمة متكررة؟"], ["Every day", "Tous les jours", "كل يوم"], ["Every week (same day)", "Chaque semaine (même jour)", "كل أسبوع (نفس اليوم)"], ["Every Monday", "Chaque lundi", "كل اثنين"], ["Every Tuesday", "Chaque mardi", "كل ثلاثاء"], ["Every Wednesday", "Chaque mercredi", "كل أربعاء"], ["Every Thursday", "Chaque jeudi", "كل خميس"], ["Every Friday", "Chaque vendredi", "كل جمعة"], ["Every Saturday", "Chaque samedi", "كل سبت"], ["Every Sunday", "Chaque dimanche", "كل أحد"], ["Duration", "Durée", "المدة"], ["Forever (until I delete it)", "Pour toujours (jusqu’à suppression)", "للأبد (حتى أحذفها)"], ["Add Task ✦", "Ajouter la tâche ✦", "إضافة المهمة ✦"], ["📝 Notes", "📝 Notes", "📝 ملاحظات"], ["💾 Save Changes", "💾 Enregistrer", "💾 حفظ التغييرات"], ["Cancel", "Annuler", "إلغاء"], ["Reset", "Réinitialiser", "إعادة تعيين"], ["Skip", "Passer", "تخطي"], ["Templates:", "Modèles :", "القوالب:"], ["🔍 No tasks found for \"", "🔍 Aucune tâche trouvée pour \"", "🔍 لا توجد مهام لـ \""], ["No tasks this week yet. Add some tasks first!", "Aucune tâche cette semaine. Ajoutez-en d’abord !", "لا توجد مهام هذا الأسبوع. أضف بعض المهام أولاً!"], ["Total", "Total", "الإجمالي"], ["this week", "cette semaine", "هذا الأسبوع"], ["Done", "Terminées", "منجزة"], ["completed", "terminées", "مكتملة"], ["Pending", "En attente", "قيد الانتظار"], ["remaining", "restantes", "متبقية"], ["Busiest", "Jour le plus chargé", "الأكثر ازدحاماً"], ["Weekly Progress", "Progression hebdomadaire", "التقدم الأسبوعي"], ["Amazing work!", "Excellent travail !", "عمل رائع!"], ["Your Analytics", "Vos statistiques", "تحليلاتك"], ["Track your productivity and build better habits.", "Suivez votre productivité et construisez de meilleures habitudes.", "تتبع إنتاجيتك وابنِ عادات أفضل."], ["Current Streak", "Série actuelle", "السلسلة الحالية"], ["weeks in a row", "semaines consécutives", "أسابيع متتالية"], ["All-Time Completed", "Total terminées", "إجمالي المنجزة"], ["tasks finished", "tâches terminées", "مهام منتهية"], ["Best Week Rate", "Meilleur taux hebdo", "أفضل نسبة أسبوعية"], ["completion rate", "taux de complétion", "نسبة الإنجاز"], ["Avg Tasks/Week", "Moy. tâches/semaine", "متوسط المهام/أسبوع"], ["per week", "par semaine", "في الأسبوع"], ["Tasks by Day of Week", "Tâches par jour de la semaine", "المهام حسب أيام الأسبوع"], ["Hover a bar to see details · white overlay = % completed", "Survolez une barre pour voir les détails · superposition blanche = % terminé", "مرر فوق العمود لرؤية التفاصيل · التظليل الأبيض = % المنجز"], ["This Week by Category", "Cette semaine par catégorie", "هذا الأسبوع حسب الفئة"], ["Recent Weeks", "Semaines récentes", "الأسابيع الأخيرة"], ["Most Productive Day", "Jour le plus productif", "اليوم الأكثر إنتاجية"], ["No data yet", "Pas encore de données", "لا توجد بيانات بعد"], ["No history yet. Start adding tasks!", "Aucun historique. Commencez à ajouter des tâches !", "لا يوجد سجل بعد. ابدأ بإضافة المهام!"], ["The secret of getting ahead is getting started.", "Le secret pour avancer, c’est de commencer.", "سر التقدم هو أن تبدأ."], ["Focus on being productive instead of busy.", "Concentrez-vous sur la productivité plutôt que sur l’agitation.", "ركّز على أن تكون منتجاً بدلاً من أن تكون مشغولاً."], ["It always seems impossible until it's done.", "Cela semble toujours impossible jusqu’à ce que ce soit fait.", "يبدو الأمر مستحيلاً دائماً حتى يتم إنجازه."], ["Done is better than perfect.", "Fait vaut mieux que parfait.", "المنجز أفضل من الكامل."], ["Small daily improvements lead to stunning results.", "De petites améliorations quotidiennes mènent à des résultats époustouflants.", "التحسينات اليومية الصغيرة تقود إلى نتائج مذهلة."], ["Action is the foundational key to all success.", "L’action est la clé fondamentale de tout succès.", "العمل هو المفتاح الأساسي لكل نجاح."], ["— Mark Twain", "— Mark Twain", "— مارك توين"], ["— Tim Ferriss", "— Tim Ferriss", "— تيم فيريس"], ["— Nelson Mandela", "— Nelson Mandela", "— نيلسون مانديلا"], ["— Sheryl Sandberg", "— Sheryl Sandberg", "— شيريل ساندبرغ"], ["— Robin Sharma", "— Robin Sharma", "— روبن شارما"], ["— Pablo Picasso", "— Pablo Picasso", "— بابلو بيكاسو"], ["Perfect week! You crushed it!", "Semaine parfaite ! Vous avez assuré !", "أسبوع مثالي! لقد أبدعت!"], ["Absolutely legendary.", "Absolument légendaire.", "أسطوري تماماً."], ["Amazing work this week!", "Excellent travail cette semaine !", "عمل رائع هذا الأسبوع!"], ["Keep this momentum going!", "Gardez cet élan !", "حافظ على هذا الزخم!"], ["Solid progress!", "Beaux progrès !", "تقدم ممتاز!"], ["More than halfway through — keep pushing!", "Plus de la moitié faite — continuez !", "تجاوزت النصف — واصل!"], ["Good start — keep going!", "Bon début — continuez !", "بداية جيدة — واصل!"], ["Every completed task counts.", "Chaque tâche terminée compte.", "كل مهمة منجزة لها قيمتها."], ["You've started — that's what matters!", "Vous avez commencé — c’est ce qui compte !", "لقد بدأت — وهذا هو المهم!"], ["Consistency builds habits. Keep at it!", "La constance crée les habitudes. Continuez !", "الاستمرارية تبني العادات. واصل!"], ["☕ Short Break", "☕ Pause courte", "☕ استراحة قصيرة"], ["🛌 Long Break", "🛌 Pause longue", "🛌 استراحة طويلة"], ["Short Break", "Pause courte", "استراحة قصيرة"], ["Long Break", "Pause longue", "استراحة طويلة"], ["Focus Session", "Session de focus", "جلسة تركيز"], ["Free focus", "Focus libre", "تركيز حر"], ["🍅 Today", "🍅 Aujourd’hui", "🍅 اليوم"], ["⏱ Focused", "⏱ Concentré", "⏱ التركيز"], ["🔥 Streak", "🔥 Série", "🔥 السلسلة"], ["Working on", "En cours", "أعمل على"], ["— Pick a task from today —", "— Choisissez une tâche du jour —", "— اختر مهمة من اليوم —"], ["⚙️ Timer Settings", "⚙️ Réglages du minuteur", "⚙️ إعدادات المؤقت"], ["🍅 Focus duration (min)", "🍅 Durée de focus (min)", "🍅 مدة التركيز (دقيقة)"], ["☕ Short break (min)", "☕ Pause courte (min)", "☕ استراحة قصيرة (دقيقة)"], ["🛌 Long break (min)", "🛌 Pause longue (min)", "🛌 استراحة طويلة (دقيقة)"], ["🔁 Long break after (sessions)", "🔁 Pause longue après (sessions)", "🔁 استراحة طويلة بعد (جلسات)"], ["Today's sessions", "Sessions du jour", "جلسات اليوم"], ["🗂️ My Boards", "🗂️ Mes tableaux", "🗂️ لوحاتي"], ["Collaborate with your team in real time", "Collaborez en temps réel avec votre équipe", "تعاون مع فريقك في الوقت الفعلي"], ["+ New Board", "+ Nouveau tableau", "+ لوحة جديدة"], ["← All Boards", "← Tous les tableaux", "→ كل اللوحات"], ["Board", "Tableau", "لوحة"], ["👥 Invite", "👥 Inviter", "👥 دعوة"], ["🗑 Delete Board", "🗑 Supprimer le tableau", "🗑 حذف اللوحة"], ["Create New Board", "Créer un nouveau tableau", "إنشاء لوحة جديدة"], ["Board Name", "Nom du tableau", "اسم اللوحة"], ["e.g. Product Roadmap, Team Sprint...", "ex. Feuille de route, Sprint d’équipe...", "مثال: خطة المنتج، سبرنت الفريق..."], ["Color Theme", "Thème de couleur", "لون المظهر"], ["Create Board ✦", "Créer le tableau ✦", "إنشاء اللوحة ✦"], ["👥 Invite Members", "👥 Inviter des membres", "👥 دعوة أعضاء"], ["Enter email address...", "Saisissez une adresse e-mail...", "أدخل البريد الإلكتروني..."], ["Send Invite", "Envoyer l’invitation", "إرسال الدعوة"], ["Notes", "Notes", "ملاحظات"], ["Priority", "Priorité", "الأولوية"], ["🔴 High", "🔴 Élevée", "🔴 عالية"], ["🟡 Medium", "🟡 Moyenne", "🟡 متوسطة"], ["🟢 Low", "🟢 Faible", "🟢 منخفضة"], ["Assign to", "Assigner à", "تعيين إلى"], ["— Unassigned —", "— Non assigné —", "— غير معيّن —"], ["Save Card ✦", "Enregistrer la carte ✦", "حفظ البطاقة ✦"], ["Card title...", "Titre de la carte...", "عنوان البطاقة..."], ["e.g. Ahmed", "ex. Ahmed", "مثال: أحمد"], ["Delete board", "Supprimer le tableau", "حذف اللوحة"], ["Delete column", "Supprimer la colonne", "حذف العمود"], ["Remove habit", "Supprimer l’habitude", "حذف العادة"], ["Delete this card?", "Supprimer cette carte ?", "حذف هذه البطاقة؟"], ["Delete this column and all its cards?", "Supprimer cette colonne et toutes ses cartes ?", "حذف هذا العمود وجميع بطاقاته؟"], ["Add New Habit", "Ajouter une habitude", "إضافة عادة جديدة"], ["Pick a Color", "Choisir une couleur", "اختر لوناً"], ["Pick an Emoji", "Choisir un emoji", "اختر رمزاً"], ["Frequency", "Fréquence", "التكرار"], ["📅 Daily", "📅 Quotidien", "📅 يومي"], ["📆 Weekly", "📆 Hebdomadaire", "📆 أسبوعي"], ["Shows in all views every day", "Suivi chaque jour", "يُتتبع كل يوم"], ["Add Habit ✦", "Ajouter ✦", "إضافة عادة ✦"], ["e.g. Morning Run, Read 20 min...", "ex. Course matinale, Lire 20 min...", "مثال: ركض صباحي، قراءة 20 دقيقة..."], ["↔️ Card moved!", "↔️ Carte déplacée !", "↔️ تم نقل البطاقة!"], ["⚠️ Add tasks to the week first!", "⚠️ Ajoutez d’abord des tâches à la semaine !", "⚠️ أضف مهام للأسبوع أولاً!"], ["⚠️ Already a member", "⚠️ Déjà membre", "⚠️ عضو بالفعل"], ["⚠️ Could not delete board", "⚠️ Impossible de supprimer le tableau", "⚠️ تعذّر حذف اللوحة"], ["⚠️ Could not load boards — check Firestore rules", "⚠️ Impossible de charger les tableaux — vérifiez les règles Firestore", "⚠️ تعذّر تحميل اللوحات — تحقق من قواعد Firestore"], ["⚠️ Enter a board name", "⚠️ Saisissez un nom de tableau", "⚠️ أدخل اسم اللوحة"], ["⚠️ Enter a card title", "⚠️ Saisissez un titre de carte", "⚠️ أدخل عنوان البطاقة"], ["⚠️ Enter a valid email", "⚠️ Saisissez un e-mail valide", "⚠️ أدخل بريداً إلكترونياً صالحاً"], ["⚠️ Save failed. Check connection.", "⚠️ Échec de l’enregistrement. Vérifiez la connexion.", "⚠️ فشل الحفظ. تحقق من الاتصال."], ["✅ Already installed!", "✅ Déjà installée !", "✅ التطبيق مثبّت بالفعل!"], ["✅ Back online! Syncing your tasks...", "✅ De retour en ligne ! Synchronisation de vos tâches...", "✅ عاد الاتصال! تتم مزامنة مهامك..."], ["✅ Member removed", "✅ Membre retiré", "✅ تمت إزالة العضو"], ["✅ Settings saved!", "✅ Paramètres enregistrés !", "✅ تم حفظ الإعدادات!"], ["✅ Task marked as done!", "✅ Tâche marquée comme terminée !", "✅ تم وضع علامة منجزة على المهمة!"], ["✅ Task saved to cloud!", "✅ Tâche enregistrée !", "✅ تم حفظ المهمة!"], ["🔁 Recurring task saved!", "🔁 Tâche récurrente enregistrée !", "🔁 تم حفظ المهمة المتكررة!"], ["❌ Your browser does not support notifications.", "❌ Votre navigateur ne prend pas en charge les notifications.", "❌ متصفحك لا يدعم الإشعارات."], ["🍅 Break over! Back to focus!", "🍅 Pause terminée ! Retour au focus !", "🍅 انتهت الاستراحة! عد إلى التركيز!"], ["🎉 All done!", "🎉 Tout est terminé !", "🎉 تم إنجاز كل شيء!"], ["🎉 WeekFlow installed on your home screen!", "🎉 WeekFlow installée sur votre écran d’accueil !", "🎉 تم تثبيت WeekFlow على شاشتك الرئيسية!"], ["🎉 WeekFlow installed!", "🎉 WeekFlow installée !", "🎉 تم تثبيت WeekFlow!"], ["💾 Task updated!", "💾 Tâche mise à jour !", "💾 تم تحديث المهمة!"], ["📡 Offline — app works, data saves when reconnected", "📡 Hors ligne — l’app fonctionne, les données seront enregistrées à la reconnexion", "📡 غير متصل — التطبيق يعمل وستُحفظ البيانات عند عودة الاتصال"], ["🔄 App updated!", "🔄 Application mise à jour !", "🔄 تم تحديث التطبيق!"], ["🔔 Notifications enabled!", "🔔 Notifications activées !", "🔔 تم تفعيل الإشعارات!"], ["🗂️ Board created!", "🗂️ Tableau créé !", "🗂️ تم إنشاء اللوحة!"], ["🗑️ Board deleted", "🗑️ Tableau supprimé", "🗑️ تم حذف اللوحة"], ["🗑️ Card deleted", "🗑️ Carte supprimée", "🗑️ تم حذف البطاقة"], ["🗑️ Removed", "🗑️ Supprimé", "🗑️ تمت الإزالة"], ["🗑️ Task deleted", "🗑️ Tâche supprimée", "🗑️ تم حذف المهمة"], ["Sign In", "Connexion", "تسجيل الدخول"], ["Get Started Free →", "Démarrer gratuitement →", "ابدأ مجاناً ←"], ["✦ Your personal productivity OS", "✦ Votre OS de productivité personnel", "✦ نظام إنتاجيتك الشخصي"], ["Plan your week.", "Planifiez votre semaine.", "خطط لأسبوعك."], ["Build your habits.", "Construisez vos habitudes.", "ابنِ عاداتك."], ["Ship your projects.", "Réalisez vos projets.", "أنجز مشاريعك."], ["WeekFlow combines your weekly planner, habit tracker, focus timer, and team boards — all in one beautiful app.", "WeekFlow réunit votre agenda, suivi des habitudes, minuteur focus et tableaux d’équipe dans une seule belle application.", "يجمع WeekFlow مخططك الأسبوعي ومتتبع العادات ومؤقت التركيز ولوحات الفريق في تطبيق جميل واحد."], ["Start for Free ✦", "Commencer gratuitement ✦", "ابدأ مجاناً ✦"], ["I have an account", "J’ai déjà un compte", "لديّ حساب بالفعل"], ["Free forever", "Gratuit à vie", "مجاني للأبد"], ["Built-in tools", "Outils intégrés", "أدوات مدمجة"], ["Tasks & habits", "Tâches et habitudes", "مهام وعادات"], ["Ads ever", "Publicités", "إعلانات"], ["Made with ❤️ · WeekFlow · Free forever · No ads", "Fait avec ❤️ · WeekFlow · Gratuit pour toujours · Sans publicité", "صُنع بـ ❤️ · WeekFlow · مجاني للأبد · بلا إعلانات"], ["Welcome to WeekFlow!", "Bienvenue sur WeekFlow !", "مرحباً بك في WeekFlow!"], ["Let's take a quick tour so you can get the most out of the app.", "Faisons un tour rapide pour tirer le meilleur parti de l’application.", "دعنا نأخذ جولة سريعة للاستفادة القصوى من التطبيق."], ["Skip tour", "Passer", "تخطي الجولة"], ["Next →", "Suivant →", "التالي ←"], ["Done ✓", "Terminé ✓", "تم ✓"], ["📅 Planner", "📅 Agenda", "📅 المخطط"], ["🍅 Focus", "🍅 Focus", "🍅 التركيز"], ["🗂️ Boards", "🗂️ Tableaux", "🗂️ اللوحات"], ["🎯 Habits", "🎯 Habitudes", "🎯 العادات"], ["Build consistency one day at a time", "Construisez la constance jour après jour", "ابنِ الاتساق يوماً بيوم"], ["+ New Habit", "+ Nouvelle habitude", "+ عادة جديدة"], ["This Week", "Cette semaine", "هذا الأسبوع"], ["completions", "complétions", "إتمام"], ["Best Streak", "Meilleure série", "أفضل سلسلة"], ["days in a row", "jours consécutifs", "أيام متتالية"], ["Completion", "Complétion", "نسبة الإتمام"], ["Perfect Week!", "Semaine parfaite !", "أسبوع مثالي!"], ["You completed all habits every day this week. Incredible! 🔥", "Toutes les habitudes complétées chaque jour cette semaine. Incroyable ! 🔥", "أكملت جميع العادات كل يوم هذا الأسبوع. رائع! 🔥"], ["⭐ PERFECT WEEK", "⭐ SEMAINE PARFAITE", "⭐ أسبوع مثالي"], ["Habit Name", "Nom de l’habitude", "اسم العادة"], ["Search tasks...", "Rechercher des tâches...", "بحث في المهام..."], ["Daily Score", "Score quotidien", "النتيجة اليومية"], ["Habit", "Habitude", "العادة"]];
+const I18N_MAP = {fr:{}, ar:{}};
+UI_TRIPLES.forEach(([en,fr,ar])=>{ I18N_MAP.fr[en]=fr; I18N_MAP.ar[en]=ar; });
+const I18N_PAT = (re,fr,ar)=>[re,(m,l)=>(l==='fr'?fr:ar).replace(/\$(\d)/g,(_,n)=>m[n])];
+const I18N_PATTERNS = [
+  I18N_PAT(/^(\d+) days$/,'$1 jours','$1 يوم'),
+  I18N_PAT(/^(\d+)m$/,'$1 min','$1 د'),
+  I18N_PAT(/^Step (\d+) of (\d+)$/,'Étape $1 sur $2','خطوة $1 من $2'),
+  I18N_PAT(/^Week of (.+)$/,'Semaine du $1','أسبوع $1'),
+  I18N_PAT(/^(.+): (\d+) done \/ (\d+) total$/,'$1 : $2 terminées / $3 au total','$1: $2 منجزة / $3 المجموع'),
+  I18N_PAT(/^📧 (.+) invited!$/,'📧 $1 invité(e) !','📧 تمت دعوة $1!'),
+  I18N_PAT(/^Remove (.+) from this board\?$/,'Retirer $1 de ce tableau ?','إزالة $1 من هذه اللوحة؟'),
+  I18N_PAT(/^Delete "(.+)" and all its cards\? This cannot be undone\.$/,'Supprimer « $1 » et toutes ses cartes ? Cette action est irréversible.','حذف "$1" وجميع بطاقاتها؟ لا يمكن التراجع عن هذا.'),
+  I18N_PAT(/^📅 Jumped to week of (.+)$/,'📅 Aller à la semaine du $1','📅 الانتقال إلى أسبوع $1'),
+  [/^(\d+)% completion — (.+)$/,(m,l)=>{
+    const rest=i18nLookup(m[2],l)||m[2];
+    return l==='fr'?`${m[1]} % de complétion — ${rest}`:`${m[1]}% إنجاز — ${rest}`;
+  }],
+];
+const I18N_SKIP = '.ct-text,.notes-preview,.k-card-title,.k-card-notes,.board-card-name,#board-view-title,#task-modal-title,.habit-name,.lang-menu,.col-title-input';
+
+function i18nLookup(str, lang){
+  if(lang==='en') return null;
+  const norm = str.replace(/\s+/g,' ').trim();
+  if(!norm) return null;
+  const map = I18N_MAP[lang]; if(!map) return null;
+  if(map[norm]!==undefined) return map[norm];
+  const q = norm.match(/^(["“])(.+?)(["”])$/);
+  if(q && map[q[2]]!==undefined) return q[1]+map[q[2]]+q[3];
+  for(const [re,fn] of I18N_PATTERNS){ const m=norm.match(re); if(m) return fn(m,lang); }
+  return null;
+}
+function trUI(s){ const r=i18nLookup(String(s),currentLang); return r!=null?r:s; }
+
+const _nativeConfirm = window.confirm.bind(window);
+window.confirm = m => _nativeConfirm(trUI(m));
+
+function i18nTextNode(node){
+  const p=node.parentNode; if(!p) return;
+  const tag=p.nodeName;
+  if(tag==='SCRIPT'||tag==='STYLE'||tag==='TEXTAREA'||tag==='NOSCRIPT') return;
+  if(p.closest && p.closest(I18N_SKIP)) return;
+  if(node.__orig===undefined || node.nodeValue!==node.__set){ node.__orig=node.nodeValue; }
+  let out=node.__orig;
+  const r=i18nLookup(node.__orig,currentLang);
+  if(r!=null){
+    const lead=node.__orig.match(/^\s*/)[0], trail=node.__orig.match(/\s*$/)[0];
+    out=lead+r+trail;
+  }
+  if(out!==node.nodeValue) node.nodeValue=out;
+  node.__set=node.nodeValue;
+}
+const I18N_ATTRS=['placeholder','title','aria-label'];
+function i18nAttrs(el){
+  if(!el.getAttribute) return;
+  el.__oa = el.__oa || {};
+  el.__sa = el.__sa || {};
+  for(const a of I18N_ATTRS){
+    if(!el.hasAttribute(a)) continue;
+    const cur=el.getAttribute(a);
+    if(el.__oa[a]===undefined || cur!==el.__sa[a]) el.__oa[a]=cur;
+    const r=i18nLookup(el.__oa[a],currentLang);
+    const out=r!=null?r:el.__oa[a];
+    if(out!==cur) el.setAttribute(a,out);
+    el.__sa[a]=out;
+  }
+}
+function i18nWalk(root){
+  if(!root) return;
+  if(root.nodeType===3){ i18nTextNode(root); return; }
+  if(root.nodeType!==1) return;
+  i18nAttrs(root);
+  root.querySelectorAll('[placeholder],[title],[aria-label]').forEach(i18nAttrs);
+  const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+  const nodes=[]; while(tw.nextNode()) nodes.push(tw.currentNode);
+  nodes.forEach(i18nTextNode);
+}
+const i18nObserver = new MutationObserver(muts=>{
+  if(currentLang==='en') return;
+  for(const m of muts){
+    if(m.type==='childList') m.addedNodes.forEach(n=>i18nWalk(n));
+    else if(m.type==='characterData') i18nTextNode(m.target);
+    else if(m.type==='attributes') i18nAttrs(m.target);
+  }
+});
+i18nObserver.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:I18N_ATTRS});
+function i18nApplyAll(){
+  i18nObserver.disconnect();
+  i18nWalk(document.body);
+  i18nObserver.takeRecords();
+  i18nObserver.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:I18N_ATTRS});
+  document.title = currentLang==='ar' ? 'WeekFlow Pro — مخطط أسبوعي' : currentLang==='fr' ? 'WeekFlow Pro — Agenda hebdomadaire' : 'WeekFlow Pro';
+}
+window.i18nApplyAll = i18nApplyAll;
 
 // Init language on load
 (function initLang(){
@@ -4569,6 +4673,7 @@ function applyTranslations(){
   document.querySelectorAll('.lang-option').forEach(o => o.classList.toggle('active', o.dataset.lang === lang));
   if(lang !== 'en') applyTranslations();
 })();
+if(currentLang!=='en') i18nApplyAll();
 
 // ── Auth enter key ────────────────────────
 ['login-email','login-pass'].forEach(id=>{document.getElementById(id)?.addEventListener('keydown',e=>{if(e.key==='Enter')window.emailLogin();});});
