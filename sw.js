@@ -1,9 +1,10 @@
 // WeekFlow Pro — Service Worker v6
 // ⚡ FULL OFFLINE SUPPORT — app works completely without internet
-const CACHE_NAME = 'weekflow-v11';
+const CACHE_NAME = 'weekflow-v12';
 const FONT_CACHE = 'weekflow-fonts-v1';
 
 // Core app files to cache immediately on install
+// Relative paths so it works at the site root AND in a subfolder (e.g. GitHub Pages /WeekFlow/)
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -58,11 +59,9 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
 
-  // Skip non-GET requests
+  // Skip non-GET requests and non-http(s) schemes (e.g. chrome-extension://)
   if (e.request.method !== 'GET') return;
-
-  // Skip requests the Cache API can't store (browser extensions, etc.)
-  if (!url.startsWith('http://') && !url.startsWith('https://')) return;
+  if (!url.startsWith('http')) return;
 
   // ── FONTS: cache-first (fonts don't change) ──
   if (url.includes('fonts.googleapis.com') || url.includes('fonts.gstatic.com')) {
@@ -110,8 +109,8 @@ self.addEventListener('fetch', e => {
           networkFetch;
           return cached;
         }
-        // No cache — must use network (or show offline fallback)
-        return networkFetch || cache.match('/index.html');
+        // No cache — use network, or fall back to the cached app shell when offline
+        return networkFetch.then(res => res || cache.match('./index.html'));
       })
     )
   );

@@ -20,6 +20,8 @@ body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Seg
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
   <meta name="theme-color" content="#1A1208">
+  <link rel="apple-touch-icon" href="icon-512.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WeekFlow">
@@ -1107,30 +1109,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 .ios-close-btn:hover { opacity: .85; }
 
-/* On desktop — show install button in topbar instead */
-@media(min-width:769px) {
-  .install-fab { display: none; }
-  .tb-install-btn {
-    display: flex !important;
-    align-items: center;
-    gap: 6px;
-    background: linear-gradient(135deg,#FF6B6B,#FF9F43);
-    color: #fff;
-    border: none;
-    border-radius: 99px;
-    padding: 7px 16px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity .2s;
-  }
-  .tb-install-btn:hover { opacity: .85; }
-  .tb-install-btn.hidden { display: none !important; }
+/* Install button — visible on tablet + desktop (compact icon on smaller screens) */
+.install-fab{display:none;}
+.tb-install-btn{display:flex;align-items:center;justify-content:center;gap:6px;background:linear-gradient(135deg,#FF6B6B,#FF9F43);color:#fff;border:none;border-radius:99px;padding:7px 16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .2s;white-space:nowrap;flex-shrink:0;}
+.tb-install-btn:hover{opacity:.85;}
+.tb-install-btn.hidden{display:none!important;}
+@media(max-width:1100px){
+  .tb-install-btn{width:34px;height:34px;padding:0;border-radius:50%;}
+  .tb-install-btn .ti-text{display:none;}
+  .tb-install-btn .ti-icon{font-size:16px;line-height:1;}
+  .tb-name{display:none;}
 }
-@media(max-width:768px) {
-  .tb-install-btn { display: none !important; }
-}
+@media(max-width:600px){ .tb-install-btn{display:none!important;} }
+@media(min-width:769px){ .ios-modal{align-items:center;} .ios-modal-box{border-radius:24px;padding-bottom:32px;} }
 
 /* ══ PWA INSTALL BANNER ══ */
 .pwa-banner{
@@ -1353,7 +1344,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       </div>
       <!-- Dark mode toggle -->
       <button class="dark-toggle" id="dark-toggle" title="Toggle dark mode" onclick="toggleDarkMode()">🌙</button>
-      <button class="tb-install-btn" id="tb-install-btn" title="Install App">📲 Install App</button>
+      <button class="tb-install-btn" id="tb-install-btn" title="Install App"><span class="ti-icon">📲</span><span class="ti-text">Install App</span></button>
       <div class="tb-avatar" id="tb-avatar">?</div>
       <div class="tb-name" id="tb-name">—</div>
       <span class="saving-dot" id="saving-dot" style="display:none"></span>
@@ -1880,6 +1871,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="offline-bar" id="offline-bar">📡 You are offline — your tasks are saved locally and will sync when you reconnect</div>
 
 <!-- PWA INSTALL BANNER -->
+<div class="ios-modal" id="ios-modal">
+  <div class="ios-modal-box">
+    <div class="ios-modal-title" id="im-title">Install WeekFlow</div>
+    <div class="ios-modal-sub" id="im-sub"></div>
+    <div class="ios-steps" id="im-steps"></div>
+    <button class="ios-close-btn" id="im-close">Got it</button>
+  </div>
+</div>
+
 <div class="pwa-banner" id="pwa-banner">
   <div class="pwa-banner-icon">📅</div>
   <div class="pwa-banner-text">
@@ -4724,7 +4724,7 @@ if('serviceWorker' in navigator){
 // ✅ PWA INSTALL — ALWAYS VISIBLE ON ALL DEVICES
 // ══════════════════════════════════════════
 let deferredPrompt = null;
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) && !window.MSStream;
 const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
 function markInstalled() {
@@ -4748,10 +4748,67 @@ window.triggerInstall = async function() {
     const {outcome} = await deferredPrompt.userChoice;
     if(outcome === 'accepted') { showToast('🎉 WeekFlow installed!'); deferredPrompt = null; }
   } else {
-    // iOS and all other browsers — show step-by-step instructions
-    document.getElementById('ios-modal')?.classList.add('show');
+    // No native prompt available (iPad/iPhone, some Android browsers) — show step-by-step help
+    showInstallHelp();
   }
 };
+
+const INSTALL_TXT = {
+  en:{title:'Install WeekFlow',close:'Got it',
+    ios:'In Safari, add WeekFlow to your Home Screen:',
+    iosOther:'Open this page in Safari first — other iOS browsers can’t install apps. Then:',
+    android:'In Chrome, Edge or Samsung Internet:',
+    desktop:'In Chrome or Edge:',
+    tip:'Don’t see the option? Reload the page and wait a few seconds.',
+    steps:{
+      ios:[['⬆️','Tap the Share button','Top bar on iPad, bottom bar on iPhone'],['➕','Choose “Add to Home Screen”','Scroll down in the share menu if needed'],['✅','Tap “Add”','WeekFlow appears on your Home Screen']],
+      android:[['⋮','Tap the ⋮ menu','Top-right corner of the browser'],['📲','Tap “Install app” or “Add to Home screen”',''],['✅','Confirm','WeekFlow is added to your apps']],
+      desktop:[['⊕','Click the install icon in the address bar','Right side of the address bar'],['⋮','Or open the menu → “Install WeekFlow”',''],['✅','Confirm','WeekFlow opens in its own window']]}},
+  fr:{title:'Installer WeekFlow',close:'Compris',
+    ios:'Dans Safari, ajoutez WeekFlow à votre écran d’accueil :',
+    iosOther:'Ouvrez d’abord cette page dans Safari — les autres navigateurs iOS ne peuvent pas installer d’apps. Ensuite :',
+    android:'Dans Chrome, Edge ou Samsung Internet :',
+    desktop:'Dans Chrome ou Edge :',
+    tip:'Vous ne voyez pas l’option ? Rechargez la page et patientez quelques secondes.',
+    steps:{
+      ios:[['⬆️','Appuyez sur le bouton Partager','Barre du haut sur iPad, barre du bas sur iPhone'],['➕','Choisissez « Sur l’écran d’accueil »','Faites défiler le menu si nécessaire'],['✅','Appuyez sur « Ajouter »','WeekFlow apparaît sur votre écran d’accueil']],
+      android:[['⋮','Appuyez sur le menu ⋮','En haut à droite du navigateur'],['📲','Appuyez sur « Installer l’application » ou « Ajouter à l’écran d’accueil »',''],['✅','Confirmez','WeekFlow est ajoutée à vos applications']],
+      desktop:[['⊕','Cliquez sur l’icône d’installation dans la barre d’adresse','À droite de la barre d’adresse'],['⋮','Ou ouvrez le menu → « Installer WeekFlow »',''],['✅','Confirmez','WeekFlow s’ouvre dans sa propre fenêtre']]}},
+  ar:{title:'تثبيت WeekFlow',close:'حسناً',
+    ios:'في Safari، أضِف WeekFlow إلى الشاشة الرئيسية:',
+    iosOther:'افتح هذه الصفحة في Safari أولاً — متصفحات iOS الأخرى لا تستطيع تثبيت التطبيقات. ثم:',
+    android:'في Chrome أو Edge أو Samsung Internet:',
+    desktop:'في Chrome أو Edge:',
+    tip:'لا ترى الخيار؟ أعد تحميل الصفحة وانتظر بضع ثوانٍ.',
+    steps:{
+      ios:[['⬆️','اضغط على زر المشاركة','الشريط العلوي في iPad، والسفلي في iPhone'],['➕','اختر «إضافة إلى الشاشة الرئيسية»','مرر لأسفل في قائمة المشاركة إن لزم'],['✅','اضغط «إضافة»','يظهر WeekFlow على شاشتك الرئيسية']],
+      android:[['⋮','اضغط على قائمة ⋮','أعلى المتصفح'],['📲','اضغط «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»',''],['✅','أكّد','تتم إضافة WeekFlow إلى تطبيقاتك']],
+      desktop:[['⊕','اضغط على أيقونة التثبيت في شريط العنوان','في جانب شريط العنوان'],['⋮','أو افتح القائمة ← «تثبيت WeekFlow»',''],['✅','أكّد','يُفتح WeekFlow في نافذته الخاصة']]}}
+};
+
+function detectInstallPlatform(){
+  const ua = navigator.userAgent;
+  if(isIOS) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? 'iosOther' : 'ios';
+  if(/Android/i.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function showInstallHelp(){
+  const L = INSTALL_TXT[currentLang] || INSTALL_TXT.en;
+  const plat = detectInstallPlatform();
+  const key = plat==='iosOther' ? 'ios' : plat;
+  document.getElementById('im-title').textContent = L.title;
+  document.getElementById('im-sub').textContent = L[plat==='iosOther' ? 'iosOther' : plat];
+  document.getElementById('im-close').textContent = L.close;
+  const steps = L.steps[key].map(([icon,title,sub],i)=>
+    `<div class="ios-step"><div class="ios-step-num">${i+1}</div><div class="ios-step-icon">${icon}</div><div class="ios-step-text">${title}${sub?`<span>${sub}</span>`:''}</div></div>`
+  ).join('');
+  document.getElementById('im-steps').innerHTML = steps + `<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:2px;">${L.tip}</div>`;
+  document.getElementById('pwa-banner')?.classList.remove('show');
+  document.getElementById('ios-modal').classList.add('show');
+}
+document.getElementById('im-close')?.addEventListener('click', ()=>document.getElementById('ios-modal').classList.remove('show'));
+document.getElementById('ios-modal')?.addEventListener('click', e=>{ if(e.target.id==='ios-modal') e.target.classList.remove('show'); });
 
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
@@ -4765,7 +4822,12 @@ window.addEventListener('beforeinstallprompt', e => {
 
 document.getElementById('pwa-banner-close')?.addEventListener('click', () => {
   document.getElementById('pwa-banner')?.classList.remove('show');
+  localStorage.setItem('wf_ios_hint','1');
 });
+// iPhone/iPad never fire an install event — gently show our banner once
+if(isIOS && !isInStandaloneMode && !localStorage.getItem('wf_ios_hint')){
+  setTimeout(()=>document.getElementById('pwa-banner')?.classList.add('show'), 4000);
+}
 
 window.addEventListener('appinstalled', () => {
   markInstalled();
