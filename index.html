@@ -22,6 +22,20 @@ body { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Seg
   <meta name="theme-color" content="#1A1208">
   <link rel="apple-touch-icon" href="icon-512.png">
   <link rel="icon" type="image/png" href="icon-192.png">
+  <script>
+  // Catch Chrome's "installable" signal EARLY — it can fire before the main module finishes loading
+  window.__wfInstallEvt = null;
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    window.__wfInstallEvt = e;
+    window.dispatchEvent(new Event('wf-install-ready'));
+  });
+  window.addEventListener('appinstalled', function(){ window.__wfInstalled = true; });
+  // Register the service worker right away (installability needs it)
+  if('serviceWorker' in navigator){
+    window.addEventListener('DOMContentLoaded', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  }
+  </script>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="WeekFlow">
@@ -1108,6 +1122,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   cursor: pointer; transition: opacity .2s;
 }
 .ios-close-btn:hover { opacity: .85; }
+
+/* Install help popup — dark mode contrast */
+[data-theme="dark"] .ios-step-num{color:#1A1208;}
+[data-theme="dark"] .ios-close-btn{color:#1A1208;}
 
 /* Install button — visible on tablet + desktop (compact icon on smaller screens) */
 .install-fab{display:none;}
@@ -4723,7 +4741,7 @@ if('serviceWorker' in navigator){
 // ══════════════════════════════════════════
 // ✅ PWA INSTALL — ALWAYS VISIBLE ON ALL DEVICES
 // ══════════════════════════════════════════
-let deferredPrompt = null;
+let deferredPrompt = window.__wfInstallEvt || null;
 const isIOS = (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) && !window.MSStream;
 const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
@@ -4760,9 +4778,10 @@ const INSTALL_TXT = {
     android:'In Chrome, Edge or Samsung Internet:',
     desktop:'In Chrome or Edge:',
     tip:'Don’t see the option? Reload the page and wait a few seconds.',
+    tipAndroid:'Don’t see it? Scroll down the ⋮ menu, make sure “Desktop site” is unticked, then reload and wait a few seconds.',
     steps:{
       ios:[['⬆️','Tap the Share button','Top bar on iPad, bottom bar on iPhone'],['➕','Choose “Add to Home Screen”','Scroll down in the share menu if needed'],['✅','Tap “Add”','WeekFlow appears on your Home Screen']],
-      android:[['⋮','Tap the ⋮ menu','Top-right corner of the browser'],['📲','Tap “Install app” or “Add to Home screen”',''],['✅','Confirm','WeekFlow is added to your apps']],
+      android:[['⋮','Tap the ⋮ menu','Top-right corner — scroll down the menu to find the option'],['📲','Tap “Install app” or “Add to Home screen”',''],['✅','Confirm','WeekFlow is added to your apps']],
       desktop:[['⊕','Click the install icon in the address bar','Right side of the address bar'],['⋮','Or open the menu → “Install WeekFlow”',''],['✅','Confirm','WeekFlow opens in its own window']]}},
   fr:{title:'Installer WeekFlow',close:'Compris',
     ios:'Dans Safari, ajoutez WeekFlow à votre écran d’accueil :',
@@ -4770,9 +4789,10 @@ const INSTALL_TXT = {
     android:'Dans Chrome, Edge ou Samsung Internet :',
     desktop:'Dans Chrome ou Edge :',
     tip:'Vous ne voyez pas l’option ? Rechargez la page et patientez quelques secondes.',
+    tipAndroid:'Vous ne la voyez pas ? Faites défiler le menu ⋮, décochez « Version pour ordinateur », rechargez la page et patientez quelques secondes.',
     steps:{
       ios:[['⬆️','Appuyez sur le bouton Partager','Barre du haut sur iPad, barre du bas sur iPhone'],['➕','Choisissez « Sur l’écran d’accueil »','Faites défiler le menu si nécessaire'],['✅','Appuyez sur « Ajouter »','WeekFlow apparaît sur votre écran d’accueil']],
-      android:[['⋮','Appuyez sur le menu ⋮','En haut à droite du navigateur'],['📲','Appuyez sur « Installer l’application » ou « Ajouter à l’écran d’accueil »',''],['✅','Confirmez','WeekFlow est ajoutée à vos applications']],
+      android:[['⋮','Appuyez sur le menu ⋮','En haut à droite — faites défiler le menu pour trouver l’option'],['📲','Appuyez sur « Installer l’application » ou « Ajouter à l’écran d’accueil »',''],['✅','Confirmez','WeekFlow est ajoutée à vos applications']],
       desktop:[['⊕','Cliquez sur l’icône d’installation dans la barre d’adresse','À droite de la barre d’adresse'],['⋮','Ou ouvrez le menu → « Installer WeekFlow »',''],['✅','Confirmez','WeekFlow s’ouvre dans sa propre fenêtre']]}},
   ar:{title:'تثبيت WeekFlow',close:'حسناً',
     ios:'في Safari، أضِف WeekFlow إلى الشاشة الرئيسية:',
@@ -4780,16 +4800,18 @@ const INSTALL_TXT = {
     android:'في Chrome أو Edge أو Samsung Internet:',
     desktop:'في Chrome أو Edge:',
     tip:'لا ترى الخيار؟ أعد تحميل الصفحة وانتظر بضع ثوانٍ.',
+    tipAndroid:'لا تراه؟ مرّر قائمة ⋮ لأسفل، وتأكد من إلغاء تحديد «نسخة سطح المكتب»، ثم أعد تحميل الصفحة وانتظر بضع ثوانٍ.',
     steps:{
       ios:[['⬆️','اضغط على زر المشاركة','الشريط العلوي في iPad، والسفلي في iPhone'],['➕','اختر «إضافة إلى الشاشة الرئيسية»','مرر لأسفل في قائمة المشاركة إن لزم'],['✅','اضغط «إضافة»','يظهر WeekFlow على شاشتك الرئيسية']],
-      android:[['⋮','اضغط على قائمة ⋮','أعلى المتصفح'],['📲','اضغط «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»',''],['✅','أكّد','تتم إضافة WeekFlow إلى تطبيقاتك']],
+      android:[['⋮','اضغط على قائمة ⋮','أعلى المتصفح — مرّر القائمة لأسفل لإيجاد الخيار'],['📲','اضغط «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»',''],['✅','أكّد','تتم إضافة WeekFlow إلى تطبيقاتك']],
       desktop:[['⊕','اضغط على أيقونة التثبيت في شريط العنوان','في جانب شريط العنوان'],['⋮','أو افتح القائمة ← «تثبيت WeekFlow»',''],['✅','أكّد','يُفتح WeekFlow في نافذته الخاصة']]}}
 };
 
 function detectInstallPlatform(){
   const ua = navigator.userAgent;
   if(isIOS) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? 'iosOther' : 'ios';
-  if(/Android/i.test(ua)) return 'android';
+  // Android phones/tablets — including tablets in "Desktop site" mode (Linux UA + touch screen)
+  if(/Android/i.test(ua) || (navigator.maxTouchPoints>1 && /Linux|X11|CrOS/.test(ua))) return 'android';
   return 'desktop';
 }
 
@@ -4803,18 +4825,22 @@ function showInstallHelp(){
   const steps = L.steps[key].map(([icon,title,sub],i)=>
     `<div class="ios-step"><div class="ios-step-num">${i+1}</div><div class="ios-step-icon">${icon}</div><div class="ios-step-text">${title}${sub?`<span>${sub}</span>`:''}</div></div>`
   ).join('');
-  document.getElementById('im-steps').innerHTML = steps + `<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:2px;">${L.tip}</div>`;
+  const st = {en:['Browser install signal: not received yet',''],fr:['Signal d’installation du navigateur : pas encore reçu',''],ar:['إشارة التثبيت من المتصفح: لم تصل بعد','']}[currentLang]||['',''];
+  document.getElementById('im-steps').innerHTML = steps + `<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:2px;">${plat==='android' ? (L.tipAndroid||L.tip) : L.tip}</div><div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px;opacity:.7;">${st[0]}</div>`;
   document.getElementById('pwa-banner')?.classList.remove('show');
   document.getElementById('ios-modal').classList.add('show');
 }
 document.getElementById('im-close')?.addEventListener('click', ()=>document.getElementById('ios-modal').classList.remove('show'));
 document.getElementById('ios-modal')?.addEventListener('click', e=>{ if(e.target.id==='ios-modal') e.target.classList.remove('show'); });
 
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  setTimeout(() => { document.getElementById('pwa-banner')?.classList.add('show'); }, 3000);
-});
+function onInstallReady(){
+  deferredPrompt = window.__wfInstallEvt;
+  // If the help popup is open, close it — the real install prompt is now available
+  document.getElementById('ios-modal')?.classList.remove('show');
+  if(!isInStandaloneMode) setTimeout(() => { document.getElementById('pwa-banner')?.classList.add('show'); }, 3000);
+}
+window.addEventListener('wf-install-ready', onInstallReady);
+if(window.__wfInstallEvt) onInstallReady();   // event already fired before this script ran
 
 ['install-fab','tb-install-btn','pwa-install-btn','mob-install-btn'].forEach(id => {
   document.getElementById(id)?.addEventListener('click', () => window.triggerInstall());
@@ -4830,6 +4856,7 @@ if(isIOS && !isInStandaloneMode && !localStorage.getItem('wf_ios_hint')){
 }
 
 window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
   markInstalled();
   showToast('🎉 WeekFlow installed on your home screen!');
   haptic([50,30,100]);
