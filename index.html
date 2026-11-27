@@ -1123,6 +1123,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 }
 .ios-close-btn:hover { opacity: .85; }
 
+
+.im-diag{margin-top:12px;border-top:1px solid var(--border);padding-top:10px;}
+.im-diag-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+.im-diag-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;color:var(--ink);}
 /* Install help popup — dark mode contrast */
 [data-theme="dark"] .ios-step-num{color:#1A1208;}
 [data-theme="dark"] .ios-close-btn{color:#1A1208;}
@@ -1895,6 +1899,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     <div class="ios-modal-sub" id="im-sub"></div>
     <div class="ios-steps" id="im-steps"></div>
     <button class="ios-close-btn" id="im-close">Got it</button>
+    <button class="ios-close-btn" id="im-reload" style="margin-top:8px;background:transparent;color:var(--ink);border:1.5px solid var(--border);">Reload page</button>
   </div>
 </div>
 
@@ -4772,47 +4777,83 @@ window.triggerInstall = async function() {
 };
 
 const INSTALL_TXT = {
-  en:{title:'Install WeekFlow',close:'Got it',
+  en:{title:'Install WeekFlow',close:'Got it',reload:'Reload page',
     ios:'In Safari, add WeekFlow to your Home Screen:',
     iosOther:'Open this page in Safari first — other iOS browsers can’t install apps. Then:',
     android:'In Chrome, Edge or Samsung Internet:',
+    androidDesktop:'Chrome is showing the DESKTOP version of the site — this blocks installing.',
     desktop:'In Chrome or Edge:',
     tip:'Don’t see the option? Reload the page and wait a few seconds.',
-    tipAndroid:'Don’t see it? Scroll down the ⋮ menu, make sure “Desktop site” is unticked, then reload and wait a few seconds.',
+    tipAndroid:'Don’t see “Install app”? Scroll down the ⋮ menu and make sure “Desktop site” is unticked, then reload and wait a few seconds.',
+    diagTitle:'Install check',
+    diag:{https:'Secure connection (HTTPS)',mobile:'Mobile version of the site',manifest:'App manifest',icons:'App icons (192 & 512)',sw:'Service worker (offline)',signal:'Install signal from the browser'},
     steps:{
       ios:[['⬆️','Tap the Share button','Top bar on iPad, bottom bar on iPhone'],['➕','Choose “Add to Home Screen”','Scroll down in the share menu if needed'],['✅','Tap “Add”','WeekFlow appears on your Home Screen']],
-      android:[['⋮','Tap the ⋮ menu','Top-right corner — scroll down the menu to find the option'],['📲','Tap “Install app” or “Add to Home screen”',''],['✅','Confirm','WeekFlow is added to your apps']],
+      android:[['⋮','Tap the ⋮ menu','Top-right corner — scroll down the menu to find the option'],['📲','Tap “Install app” or “Add to Home screen”','Not “Download page”'],['✅','Confirm','WeekFlow is added to your apps']],
+      androidDesktop:[['⋮','Tap the ⋮ menu','Top-right of Chrome'],['🖥️','Scroll down and untick “Desktop site”','The page reloads in mobile mode'],['📲','Open ⋮ again → “Install app”','Not “Download page”! Then tap Install']],
       desktop:[['⊕','Click the install icon in the address bar','Right side of the address bar'],['⋮','Or open the menu → “Install WeekFlow”',''],['✅','Confirm','WeekFlow opens in its own window']]}},
-  fr:{title:'Installer WeekFlow',close:'Compris',
+  fr:{title:'Installer WeekFlow',close:'Compris',reload:'Recharger la page',
     ios:'Dans Safari, ajoutez WeekFlow à votre écran d’accueil :',
     iosOther:'Ouvrez d’abord cette page dans Safari — les autres navigateurs iOS ne peuvent pas installer d’apps. Ensuite :',
     android:'Dans Chrome, Edge ou Samsung Internet :',
+    androidDesktop:'Chrome affiche la version ORDINATEUR du site — cela bloque l’installation.',
     desktop:'Dans Chrome ou Edge :',
     tip:'Vous ne voyez pas l’option ? Rechargez la page et patientez quelques secondes.',
-    tipAndroid:'Vous ne la voyez pas ? Faites défiler le menu ⋮, décochez « Version pour ordinateur », rechargez la page et patientez quelques secondes.',
+    tipAndroid:'Pas de « Installer l’application » ? Faites défiler le menu ⋮, vérifiez que « Version pour ordinateur » est décoché, puis rechargez et patientez quelques secondes.',
+    diagTitle:'Vérification d’installation',
+    diag:{https:'Connexion sécurisée (HTTPS)',mobile:'Version mobile du site',manifest:'Manifeste de l’app',icons:'Icônes de l’app (192 et 512)',sw:'Service worker (hors ligne)',signal:'Signal d’installation du navigateur'},
     steps:{
       ios:[['⬆️','Appuyez sur le bouton Partager','Barre du haut sur iPad, barre du bas sur iPhone'],['➕','Choisissez « Sur l’écran d’accueil »','Faites défiler le menu si nécessaire'],['✅','Appuyez sur « Ajouter »','WeekFlow apparaît sur votre écran d’accueil']],
-      android:[['⋮','Appuyez sur le menu ⋮','En haut à droite — faites défiler le menu pour trouver l’option'],['📲','Appuyez sur « Installer l’application » ou « Ajouter à l’écran d’accueil »',''],['✅','Confirmez','WeekFlow est ajoutée à vos applications']],
+      android:[['⋮','Appuyez sur le menu ⋮','En haut à droite — faites défiler le menu pour trouver l’option'],['📲','Appuyez sur « Installer l’application » ou « Ajouter à l’écran d’accueil »','Pas « Télécharger la page »'],['✅','Confirmez','WeekFlow est ajoutée à vos applications']],
+      androidDesktop:[['⋮','Appuyez sur le menu ⋮','En haut à droite de Chrome'],['🖥️','Faites défiler et décochez « Version pour ordinateur »','La page se recharge en version mobile'],['📲','Rouvrez ⋮ → « Installer l’application »','Pas « Télécharger la page » ! Puis appuyez sur Installer']],
       desktop:[['⊕','Cliquez sur l’icône d’installation dans la barre d’adresse','À droite de la barre d’adresse'],['⋮','Ou ouvrez le menu → « Installer WeekFlow »',''],['✅','Confirmez','WeekFlow s’ouvre dans sa propre fenêtre']]}},
-  ar:{title:'تثبيت WeekFlow',close:'حسناً',
+  ar:{title:'تثبيت WeekFlow',close:'حسناً',reload:'إعادة تحميل الصفحة',
     ios:'في Safari، أضِف WeekFlow إلى الشاشة الرئيسية:',
     iosOther:'افتح هذه الصفحة في Safari أولاً — متصفحات iOS الأخرى لا تستطيع تثبيت التطبيقات. ثم:',
     android:'في Chrome أو Edge أو Samsung Internet:',
+    androidDesktop:'يعرض Chrome نسخة سطح المكتب من الموقع — وهذا يمنع التثبيت.',
     desktop:'في Chrome أو Edge:',
     tip:'لا ترى الخيار؟ أعد تحميل الصفحة وانتظر بضع ثوانٍ.',
-    tipAndroid:'لا تراه؟ مرّر قائمة ⋮ لأسفل، وتأكد من إلغاء تحديد «نسخة سطح المكتب»، ثم أعد تحميل الصفحة وانتظر بضع ثوانٍ.',
+    tipAndroid:'لا ترى «تثبيت التطبيق»؟ مرّر قائمة ⋮ لأسفل وتأكد من إلغاء تحديد «نسخة سطح المكتب»، ثم أعد التحميل وانتظر بضع ثوانٍ.',
+    diagTitle:'فحص التثبيت',
+    diag:{https:'اتصال آمن (HTTPS)',mobile:'نسخة الجوال من الموقع',manifest:'ملف بيان التطبيق',icons:'أيقونات التطبيق (192 و512)',sw:'عامل الخدمة (دون اتصال)',signal:'إشارة التثبيت من المتصفح'},
     steps:{
       ios:[['⬆️','اضغط على زر المشاركة','الشريط العلوي في iPad، والسفلي في iPhone'],['➕','اختر «إضافة إلى الشاشة الرئيسية»','مرر لأسفل في قائمة المشاركة إن لزم'],['✅','اضغط «إضافة»','يظهر WeekFlow على شاشتك الرئيسية']],
-      android:[['⋮','اضغط على قائمة ⋮','أعلى المتصفح — مرّر القائمة لأسفل لإيجاد الخيار'],['📲','اضغط «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»',''],['✅','أكّد','تتم إضافة WeekFlow إلى تطبيقاتك']],
+      android:[['⋮','اضغط على قائمة ⋮','أعلى المتصفح — مرّر القائمة لأسفل لإيجاد الخيار'],['📲','اضغط «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية»','وليس «تنزيل الصفحة»'],['✅','أكّد','تتم إضافة WeekFlow إلى تطبيقاتك']],
+      androidDesktop:[['⋮','اضغط على قائمة ⋮','أعلى يمين Chrome'],['🖥️','مرّر لأسفل وألغِ تحديد «نسخة سطح المكتب»','تُعاد تحميل الصفحة بنسخة الجوال'],['📲','افتح ⋮ مرة أخرى ← «تثبيت التطبيق»','ليس «تنزيل الصفحة»! ثم اضغط تثبيت']],
       desktop:[['⊕','اضغط على أيقونة التثبيت في شريط العنوان','في جانب شريط العنوان'],['⋮','أو افتح القائمة ← «تثبيت WeekFlow»',''],['✅','أكّد','يُفتح WeekFlow في نافذته الخاصة']]}}
 };
 
 function detectInstallPlatform(){
   const ua = navigator.userAgent;
   if(isIOS) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? 'iosOther' : 'ios';
-  // Android phones/tablets — including tablets in "Desktop site" mode (Linux UA + touch screen)
-  if(/Android/i.test(ua) || (navigator.maxTouchPoints>1 && /Linux|X11|CrOS/.test(ua))) return 'android';
+  if(/Android/i.test(ua)) return 'android';
+  // Touch device with a Linux desktop identity = Android tablet in "Desktop site" mode (blocks install)
+  if(navigator.maxTouchPoints>1 && /X11|Linux/.test(ua) && !/CrOS/.test(ua)) return 'androidDesktop';
   return 'desktop';
+}
+
+async function installDiagnostics(){
+  const r=[];
+  r.push({k:'https',ok:location.protocol==='https:'||location.hostname==='localhost'});
+  r.push({k:'mobile',ok:detectInstallPlatform()!=='androidDesktop'});
+  let mOk=false,iOk=false;
+  try{
+    const link=document.querySelector('link[rel="manifest"]');
+    const m=await (await fetch(link.href,{cache:'no-store'})).json();
+    mOk=!!(m.name && m.start_url && m.display);
+    const ok=await Promise.all(['192x192','512x512'].map(async s=>{
+      const ic=(m.icons||[]).find(i=>(i.sizes||'').includes(s)); if(!ic) return false;
+      const rr=await fetch(new URL(ic.src,link.href),{cache:'no-store'});
+      return rr.ok && (rr.headers.get('content-type')||'').includes('image');
+    }));
+    iOk=ok.every(Boolean);
+  }catch(e){}
+  r.push({k:'manifest',ok:mOk}); r.push({k:'icons',ok:iOk});
+  let swOk=false; try{ const reg=await navigator.serviceWorker.getRegistration(); swOk=!!(reg&&reg.active); }catch(e){}
+  r.push({k:'sw',ok:swOk});
+  r.push({k:'signal',ok:!!deferredPrompt});
+  return r;
 }
 
 function showInstallHelp(){
@@ -4820,16 +4861,22 @@ function showInstallHelp(){
   const plat = detectInstallPlatform();
   const key = plat==='iosOther' ? 'ios' : plat;
   document.getElementById('im-title').textContent = L.title;
-  document.getElementById('im-sub').textContent = L[plat==='iosOther' ? 'iosOther' : plat];
+  document.getElementById('im-sub').textContent = L[plat];
   document.getElementById('im-close').textContent = L.close;
+  const rl=document.getElementById('im-reload'); if(rl) rl.textContent = L.reload;
   const steps = L.steps[key].map(([icon,title,sub],i)=>
     `<div class="ios-step"><div class="ios-step-num">${i+1}</div><div class="ios-step-icon">${icon}</div><div class="ios-step-text">${title}${sub?`<span>${sub}</span>`:''}</div></div>`
   ).join('');
-  const st = {en:['Browser install signal: not received yet',''],fr:['Signal d’installation du navigateur : pas encore reçu',''],ar:['إشارة التثبيت من المتصفح: لم تصل بعد','']}[currentLang]||['',''];
-  document.getElementById('im-steps').innerHTML = steps + `<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:2px;">${plat==='android' ? (L.tipAndroid||L.tip) : L.tip}</div><div style="font-size:10px;color:var(--muted);text-align:center;margin-top:6px;opacity:.7;">${st[0]}</div>`;
+  const tip = (plat==='android'||plat==='androidDesktop') ? L.tipAndroid : L.tip;
+  document.getElementById('im-steps').innerHTML = steps + `<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:2px;">${tip}</div><div class="im-diag" id="im-diag"></div>`;
   document.getElementById('pwa-banner')?.classList.remove('show');
   document.getElementById('ios-modal').classList.add('show');
+  installDiagnostics().then(rows=>{
+    const el=document.getElementById('im-diag'); if(!el) return;
+    el.innerHTML = `<div class="im-diag-title">${L.diagTitle}</div>` + rows.map(x=>`<div class="im-diag-row"><span>${L.diag[x.k]}</span><span>${x.ok?'✅':'❌'}</span></div>`).join('');
+  });
 }
+document.getElementById('im-reload')?.addEventListener('click', ()=>location.reload());
 document.getElementById('im-close')?.addEventListener('click', ()=>document.getElementById('ios-modal').classList.remove('show'));
 document.getElementById('ios-modal')?.addEventListener('click', e=>{ if(e.target.id==='ios-modal') e.target.classList.remove('show'); });
 
